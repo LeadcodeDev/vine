@@ -20,14 +20,16 @@ void main() async {
       'numberField': vine.number().min(18).max(100),
       'booleanField': vine.boolean(),
       'enumField': vine.enumerate(MyEnum.values),
-      'arrayField': vine.array(vine.string().minLength(3).maxLength(20)).minLength(1),
+      'arrayField':
+          vine.array(vine.string().minLength(3).maxLength(20)).minLength(1),
       'unionField': vine.union([
         vine.string().minLength(3).maxLength(20),
         vine.number().min(10).max(20),
       ]),
     });
 
-    expect(() => vine.openApi.report(schemas: {'MySchema': schema}), returnsNormally);
+    expect(() => vine.openApi.report(schemas: {'MySchema': schema}),
+        returnsNormally);
     expect(
         vine.openApi.report(schemas: {'MySchema': schema}),
         allOf({
@@ -38,13 +40,22 @@ void main() async {
                 "title": "MySchema",
                 "type": "object",
                 "properties": {
-                  "stringField": {"type": "string", "example": "foo", "minLength": 3},
+                  "stringField": {
+                    "type": "string",
+                    "example": "foo",
+                    "minLength": 3
+                  },
                   "emailField": {
                     "type": "string",
                     "format": "email",
                     "example": "user@example.com"
                   },
-                  "numberField": {"type": "number", "example": 99.5, "minimum": 18, "maximum": 100},
+                  "numberField": {
+                    "type": "number",
+                    "example": 99.5,
+                    "minimum": 18,
+                    "maximum": 100
+                  },
                   "booleanField": {"type": "boolean", "example": true},
                   "enumField": {
                     "type": "string",
@@ -59,7 +70,12 @@ void main() async {
                   },
                   "unionField": {
                     "oneOf": [
-                      {"type": "string", "example": "foo", "minLength": 3, "title": "StringRule"},
+                      {
+                        "type": "string",
+                        "example": "foo",
+                        "minLength": 3,
+                        "title": "StringRule"
+                      },
                       {
                         "type": "number",
                         "example": 19.5,

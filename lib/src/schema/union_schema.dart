@@ -1,12 +1,11 @@
 import 'dart:collection';
 
-import 'package:vine/src/contracts/schema.dart';
-import 'package:vine/src/rule_parser.dart';
-import 'package:vine/src/rules/basic_rule.dart';
 import 'package:vine/vine.dart';
 
 final class VineUnionSchema extends RuleParser implements VineUnion {
   final List<VineSchema> _schemas;
+  dynamic _example;
+
   VineUnionSchema(super._rules, this._schemas);
 
   @override
@@ -52,6 +51,12 @@ final class VineUnionSchema extends RuleParser implements VineUnion {
   }
 
   @override
+  VineUnion example(dynamic value) {
+    _example = value;
+    return this;
+  }
+
+  @override
   VineUnion clone() {
     return VineUnionSchema(Queue.of(rules), _schemas.toList());
   }
@@ -63,7 +68,7 @@ final class VineUnionSchema extends RuleParser implements VineUnion {
         final schema = element.introspect();
 
         schema.remove('required');
-        schema['title'] = switch(element) {
+        schema['title'] = switch (element) {
           VineString() => 'StringRule',
           VineNumber() => 'NumberRule',
           VineBoolean() => 'BooleanRule',
@@ -75,7 +80,8 @@ final class VineUnionSchema extends RuleParser implements VineUnion {
 
         return schema;
       }).toList(),
-      'examples': _schemas.map((e) => e.introspect()['example']).toList(),
+      'examples':
+          _example ?? _schemas.map((e) => e.introspect()['example']).toList(),
     };
   }
 }

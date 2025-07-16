@@ -7,6 +7,8 @@ import 'package:vine/src/rules/basic_rule.dart';
 import 'package:vine/src/rules/number_rule.dart';
 
 final class VineNumberSchema extends RuleParser implements VineNumber {
+  dynamic _example;
+
   VineNumberSchema(super._rules);
 
   @override
@@ -94,6 +96,12 @@ final class VineNumberSchema extends RuleParser implements VineNumber {
   }
 
   @override
+  VineNumber example(num value) {
+    _example = value;
+    return this;
+  }
+
+  @override
   VineNumber clone() {
     return VineNumberSchema(Queue.of(rules));
   }
@@ -134,10 +142,15 @@ final class VineNumberSchema extends RuleParser implements VineNumber {
     }
 
     // Détermination du type
-    final type = isInteger ? 'integer' : isDouble ? 'number' : 'number';
+    final type = isInteger
+        ? 'integer'
+        : isDouble
+            ? 'number'
+            : 'number';
 
     // Validation de l'exemple
-    if (validations.containsKey('minimum') || validations.containsKey('maximum')) {
+    if (validations.containsKey('minimum') ||
+        validations.containsKey('maximum')) {
       example = example.clamp(
         validations['minimum'] ?? '-Infinity',
         validations['maximum'] ?? 'Infinity',
@@ -150,7 +163,7 @@ final class VineNumberSchema extends RuleParser implements VineNumber {
       'type': type,
       'required': !isOptional,
       if (enums != null) 'enum': enums,
-      'example': example,
+      'example': _example ?? example,
       ...validations,
     }..removeWhere((_, v) => v == null);
   }

@@ -3,6 +3,8 @@ import 'dart:collection';
 import 'package:vine/vine.dart';
 
 final class VineStringSchema extends RuleParser implements VineString {
+  dynamic _example;
+
   VineStringSchema(super._rules);
 
   @override
@@ -48,7 +50,8 @@ final class VineStringSchema extends RuleParser implements VineString {
       bool requireProtocol = false,
       bool allowUnderscores = false,
       String? message}) {
-    super.addRule(VineUrlRule(protocols, requireTld, requireProtocol, allowUnderscores, message));
+    super.addRule(VineUrlRule(
+        protocols, requireTld, requireProtocol, allowUnderscores, message));
     return this;
   }
 
@@ -77,7 +80,8 @@ final class VineStringSchema extends RuleParser implements VineString {
   }
 
   @override
-  VineString confirmed({String? property, bool include = false, String? message}) {
+  VineString confirmed(
+      {String? property, bool include = false, String? message}) {
     super.addRule(VineConfirmedRule(property, include, message));
     return this;
   }
@@ -197,6 +201,12 @@ final class VineStringSchema extends RuleParser implements VineString {
   }
 
   @override
+  VineString example(String value) {
+    _example = value;
+    return this;
+  }
+
+  @override
   VineString clone() {
     return VineStringSchema(Queue.of(rules));
   }
@@ -235,7 +245,7 @@ final class VineStringSchema extends RuleParser implements VineString {
       'type': 'string',
       'format': format,
       'required': !isOptional,
-      'example': example,
+      'example': _example ?? example,
       'enum': enums,
       ...validations,
     }..removeWhere((_, v) => v == null);

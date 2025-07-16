@@ -2,7 +2,8 @@ import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/introspection.dart';
 import 'package:vine/src/schema/object/object_schema.dart';
 
-abstract interface class VineSchema<T extends ErrorReporter> implements SchemaIntrospection {
+abstract interface class VineSchema<T extends ErrorReporter>
+    implements SchemaIntrospection {
   /// Validate the field [field] the field to validate
   void parse(VineValidationContext ctx, FieldContext field);
 
@@ -63,7 +64,8 @@ abstract interface class BasicSchema<T extends VineSchema> {
   T optional();
 }
 
-abstract interface class VineString implements VineSchema, BasicSchema<VineString> {
+abstract interface class VineString
+    implements VineSchema, BasicSchema<VineString> {
   /// Check if the string has a minimum length [value] the minimum length [message] the error message to display
   /// ```dart
   /// vine.string().minLength(5);
@@ -203,7 +205,8 @@ abstract interface class VineString implements VineSchema, BasicSchema<VineStrin
   /// vine.string().confirmed(
   ///   message: 'The value must be confirmed');
   /// ```
-  VineString confirmed({String? property, bool include = false, String? message});
+  VineString confirmed(
+      {String? property, bool include = false, String? message});
 
   /// Remove leading and trailing whitespace from the string
   /// ```dart
@@ -321,9 +324,16 @@ abstract interface class VineString implements VineSchema, BasicSchema<VineStrin
   ///   message: 'The value must contain only alphabetic characters');
   /// ```
   VineString regex(RegExp expression, {String? message});
+
+  /// Set the example value for the string [value] the example value
+  /// ```dart
+  /// vine.string().example('foo');
+  /// ```
+  VineString example(String value);
 }
 
-abstract interface class VineNumber implements VineSchema, BasicSchema<VineNumber> {
+abstract interface class VineNumber
+    implements VineSchema, BasicSchema<VineNumber> {
   /// Check if the number is in a range of values [values] the range of values [message] the error message to display
   /// ```dart
   /// vine.number().range([1, 10]);
@@ -392,15 +402,42 @@ abstract interface class VineNumber implements VineSchema, BasicSchema<VineNumbe
   /// You can specify a custom error message
   /// ```dart
   VineNumber integer({String? message});
+
+  /// Set the example value for the number [value] the example value
+  /// ```dart
+  /// vine.number().example(10);
+  /// ```
+  VineNumber example(num value);
 }
 
-abstract interface class VineBoolean implements VineSchema, BasicSchema<VineBoolean> {}
+abstract interface class VineBoolean
+    implements VineSchema, BasicSchema<VineBoolean> {
+  /// Set the example value for the boolean [value] the example value
+  /// ```dart
+  /// vine.boolean().example(true);
+  /// ```
+  VineBoolean example(bool value);
+}
 
-abstract interface class VineAny implements VineSchema, BasicSchema<VineAny> {}
+abstract interface class VineAny implements VineSchema, BasicSchema<VineAny> {
+  /// Set the example value for the any [value] the example value
+  /// ```dart
+  /// vine.any().example('foo');
+  /// ```
+  VineAny example(dynamic value);
+}
 
-abstract interface class VineEnum implements VineSchema, BasicSchema<VineEnum> {}
+abstract interface class VineEnum<T extends VineEnumerable>
+    implements VineSchema, BasicSchema<VineEnum<T>> {
+  /// Set the example value for the enum [value] the example value
+  /// ```dart
+  /// vine.enum().example('foo');
+  /// ```
+  VineEnum<T> example(T value);
+}
 
-abstract interface class VineObject implements VineSchema, BasicSchema<VineObject> {
+abstract interface class VineObject
+    implements VineSchema, BasicSchema<VineObject> {
   Map<String, VineSchema> get properties;
 
   VineObject merge(VineObjectSchema schema);
@@ -415,7 +452,8 @@ abstract interface class VineGroup implements VineSchema {
   ///     'email': vine.string().required().email(),
   ///   });
   /// });
-  VineGroup when(bool Function(Map<String, dynamic> data) fn, Map<String, VineSchema> object);
+  VineGroup when(bool Function(Map<String, dynamic> data) fn,
+      Map<String, VineSchema> object);
 
   /// Apply the schema if the condition is not met [fn] the schema to apply
   /// ```dart
@@ -432,7 +470,8 @@ abstract interface class VineGroup implements VineSchema {
   VineGroup otherwise(Function(VineValidationContext, FieldContext) fn);
 }
 
-abstract interface class VineArray implements VineSchema, BasicSchema<VineArray> {
+abstract interface class VineArray
+    implements VineSchema, BasicSchema<VineArray> {
   /// Check if the array has a minimum length [value] the minimum length [message] the error message to display
   /// ```dart
   /// vine.array().minLength(5);
@@ -474,7 +513,10 @@ abstract interface class VineArray implements VineSchema, BasicSchema<VineArray>
   VineArray unique({String? message});
 }
 
-abstract interface class VineUnion implements VineSchema, BasicSchema<VineUnion> {}
+abstract interface class VineUnion
+    implements VineSchema, BasicSchema<VineUnion> {
+  VineUnion example(dynamic value);
+}
 
 abstract interface class VineDate implements VineSchema, BasicSchema<VineDate> {
   /// Check if the date is before [value] the date to compare [message] the error message to display
@@ -539,4 +581,10 @@ abstract interface class VineDate implements VineSchema, BasicSchema<VineDate> {
   ///   message: 'The date must be between the start and end date');
   /// ```
   VineDate betweenFields(String start, String end, {String? message});
+
+  /// Set the example value for the date [value] the example value
+  /// ```dart
+  /// vine.date().example(DateTime.now());
+  /// ```
+  VineDate example(String value);
 }

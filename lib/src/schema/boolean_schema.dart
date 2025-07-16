@@ -6,6 +6,8 @@ import 'package:vine/src/rule_parser.dart';
 import 'package:vine/src/rules/basic_rule.dart';
 
 final class VineBooleanSchema extends RuleParser implements VineBoolean {
+  dynamic _example;
+
   VineBooleanSchema(super._rules);
 
   @override
@@ -51,6 +53,12 @@ final class VineBooleanSchema extends RuleParser implements VineBoolean {
   }
 
   @override
+  VineBoolean example(bool value) {
+    _example = value;
+    return this;
+  }
+
+  @override
   VineBoolean clone() {
     return VineBooleanSchema(Queue.of(rules));
   }
@@ -60,7 +68,7 @@ final class VineBooleanSchema extends RuleParser implements VineBoolean {
     return {
       'type': 'boolean',
       'required': !isOptional,
-      'example': true,
+      'example': _example ?? true,
     };
   }
 }

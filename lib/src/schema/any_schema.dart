@@ -6,6 +6,8 @@ import 'package:vine/src/rule_parser.dart';
 import 'package:vine/src/rules/basic_rule.dart';
 
 final class VineAnySchema extends RuleParser implements VineAny {
+  dynamic _example;
+
   VineAnySchema(super._rules);
 
   @override
@@ -51,6 +53,12 @@ final class VineAnySchema extends RuleParser implements VineAny {
   }
 
   @override
+  VineAny example(dynamic value) {
+    _example = value;
+    return this;
+  }
+
+  @override
   VineAny clone() {
     return VineAnySchema(Queue.of(rules));
   }
@@ -59,6 +67,7 @@ final class VineAnySchema extends RuleParser implements VineAny {
   Map<String, dynamic> introspect({String? name}) {
     return {
       'required': !isOptional,
+      if (_example != null) 'example': _example,
     };
   }
 }

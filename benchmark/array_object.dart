@@ -24,5 +24,6 @@ void main() {
     iterationCount++;
   }
 
-  print('Array Object : Processed $iterationCount iterations in ${duration.inSeconds} seconds');
+  print(
+      'Array Object : Processed $iterationCount iterations in ${duration.inSeconds} seconds');
 }

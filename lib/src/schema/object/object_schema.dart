@@ -81,7 +81,10 @@ final class VineObjectSchema extends RuleParser implements VineObject {
         schema.remove('required');
       }
 
-      example[entry.key] = schema['example'] ?? (schema['examples'] as List).firstOrNull;
+      example[entry.key] = schema['example'] ??
+          (schema['examples'] is List
+              ? (schema['examples'] as List).firstOrNull
+              : null);
     }
 
     return {

@@ -7,6 +7,8 @@ import 'package:vine/src/rules/basic_rule.dart';
 import 'package:vine/src/rules/date_rule.dart';
 
 final class VineDateSchema extends RuleParser implements VineDate {
+  dynamic _example;
+
   VineDateSchema(super._rules);
 
   @override
@@ -88,6 +90,12 @@ final class VineDateSchema extends RuleParser implements VineDate {
   }
 
   @override
+  VineDate example(String value) {
+    _example = value;
+    return this;
+  }
+
+  @override
   VineDate clone() {
     return VineDateSchema(Queue.of(rules));
   }
@@ -98,7 +106,7 @@ final class VineDateSchema extends RuleParser implements VineDate {
       'type': 'string',
       'format': 'date-time',
       'required': !isOptional,
-      'example': DateTime.now().toIso8601String(),
+      if (_example != null) 'example': _example,
     };
   }
 }
