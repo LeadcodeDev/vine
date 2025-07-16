@@ -1,3 +1,6 @@
+## 1.6.0
+- Add `schema.example()` method to decorate OpenApi reporter 
+
 ## 1.5.1
 - Change `Map<String, dynamic>` entry data to `dynamic` in `tryValidate`
 
