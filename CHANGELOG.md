@@ -1,3 +1,6 @@
+## 1.6.1
+- Add `schema.clone()` method to return a new instance of `VineSchema`
+
 ## 1.6.0
 - Add `schema.example()` method to decorate OpenApi reporter 
 
