@@ -2,7 +2,7 @@ import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/introspection.dart';
 import 'package:vine/src/schema/object/object_schema.dart';
 
-abstract interface class VineSchema<T extends ErrorReporter>
+abstract interface class VineSchema<T extends VineErrorReporter>
     implements SchemaIntrospection {
   /// Validate the field [field] the field to validate
   void parse(VineValidationContext ctx, FieldContext field);

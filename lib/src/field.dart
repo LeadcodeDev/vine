@@ -1,6 +1,6 @@
 import 'package:vine/src/contracts/vine.dart';
 
-final class ValidatorContext<T extends ErrorReporter>
+final class ValidatorContext<T extends VineErrorReporter>
     implements VineValidationContext<T> {
   @override
   final T errorReporter;

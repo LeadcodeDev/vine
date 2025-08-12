@@ -28,7 +28,7 @@ import 'package:vine/src/schema/string_schema.dart';
 import 'package:vine/src/schema/union_schema.dart';
 
 final class Vine {
-  ErrorReporter Function(Map<String, String> errors) errorReporter =
+  VineErrorReporter Function(Map<String, String> errors) errorReporter =
       SimpleErrorReporter.new;
 
   VineObject object(Map<String, VineSchema> payload, {String? message}) {

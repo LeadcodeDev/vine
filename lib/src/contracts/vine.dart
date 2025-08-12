@@ -1,4 +1,4 @@
-abstract interface class ErrorReporter {
+abstract interface class VineErrorReporter {
   List<Map<String, Object>> get errors;
 
   abstract bool hasError;
@@ -17,7 +17,7 @@ abstract interface class ErrorReporter {
 
 abstract interface class ValidatorContract {}
 
-abstract interface class VineValidationContext<T extends ErrorReporter> {
+abstract interface class VineValidationContext<T extends VineErrorReporter> {
   T get errorReporter;
 
   dynamic get data;
