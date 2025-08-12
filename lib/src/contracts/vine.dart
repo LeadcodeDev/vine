@@ -10,7 +10,7 @@ abstract interface class VineErrorReporter {
 
   void report(String rule, List<String> keys, String message);
 
-  Exception createError(Object message);
+  Exception createError(Map<String, dynamic> message);
 
   void clear();
 }

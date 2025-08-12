@@ -29,7 +29,7 @@ void main() {
         'age': vine.number().range([10, 20, 30])
       }));
       expect(() => validator.validate({'age': 5}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: value above range [10, 20, 30]', () {
@@ -37,7 +37,7 @@ void main() {
         'age': vine.number().range([10, 20, 30])
       }));
       expect(() => validator.validate({'age': 35}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: value not in range [10, 20, 30]', () {
@@ -45,7 +45,7 @@ void main() {
         'age': vine.number().range([10, 20, 30])
       }));
       expect(() => validator.validate({'age': 25}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -66,21 +66,21 @@ void main() {
       final validator =
           vine.compile(vine.object({'age': vine.number().min(10)}));
       expect(() => validator.validate({'age': 5}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: negative value with min (0)', () {
       final validator =
           vine.compile(vine.object({'age': vine.number().min(0)}));
       expect(() => validator.validate({'age': -5}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: null value with min (10)', () {
       final validator =
           vine.compile(vine.object({'age': vine.number().min(10)}));
       expect(() => validator.validate({'age': null}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -101,21 +101,21 @@ void main() {
       final validator =
           vine.compile(vine.object({'age': vine.number().max(100)}));
       expect(() => validator.validate({'age': 150}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: null value with max (100)', () {
       final validator =
           vine.compile(vine.object({'age': vine.number().max(100)}));
       expect(() => validator.validate({'age': null}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: negative value with max (0)', () {
       final validator =
           vine.compile(vine.object({'age': vine.number().max(0)}));
       expect(() => validator.validate({'age': -5}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -130,28 +130,28 @@ void main() {
       final validator =
           vine.compile(vine.object({'balance': vine.number().negative()}));
       expect(() => validator.validate({'balance': 0}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: positive value (10)', () {
       final validator =
           vine.compile(vine.object({'balance': vine.number().negative()}));
       expect(() => validator.validate({'balance': 10}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: null value', () {
       final validator =
           vine.compile(vine.object({'balance': vine.number().negative()}));
       expect(() => validator.validate({'balance': null}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: non-numeric value', () {
       final validator =
           vine.compile(vine.object({'balance': vine.number().negative()}));
       expect(() => validator.validate({'balance': 'not a number'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -172,21 +172,21 @@ void main() {
       final validator =
           vine.compile(vine.object({'balance': vine.number().positive()}));
       expect(() => validator.validate({'balance': -10}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: null value', () {
       final validator =
           vine.compile(vine.object({'balance': vine.number().positive()}));
       expect(() => validator.validate({'balance': null}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: non-numeric value', () {
       final validator =
           vine.compile(vine.object({'balance': vine.number().positive()}));
       expect(() => validator.validate({'balance': 'not a number'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -201,28 +201,28 @@ void main() {
       final validator =
           vine.compile(vine.object({'price': vine.number().double()}));
       expect(() => validator.validate({'price': 10}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: null value', () {
       final validator =
           vine.compile(vine.object({'price': vine.number().double()}));
       expect(() => validator.validate({'price': null}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: non-numeric value', () {
       final validator =
           vine.compile(vine.object({'price': vine.number().double()}));
       expect(() => validator.validate({'price': 'not a number'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: invalid double format', () {
       final validator =
           vine.compile(vine.object({'price': vine.number().double()}));
       expect(() => validator.validate({'price': '10.5.5'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -243,21 +243,21 @@ void main() {
       final validator =
           vine.compile(vine.object({'age': vine.number().integer()}));
       expect(() => validator.validate({'age': 10.5}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: null value', () {
       final validator =
           vine.compile(vine.object({'age': vine.number().integer()}));
       expect(() => validator.validate({'age': null}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('invalid: non-numeric value', () {
       final validator =
           vine.compile(vine.object({'age': vine.number().integer()}));
       expect(() => validator.validate({'age': 'not a number'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -278,7 +278,7 @@ void main() {
       final validator =
           vine.compile(vine.object({'age': vine.number().nullable()}));
       expect(() => validator.validate({'age': 'not a number'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -299,7 +299,7 @@ void main() {
       final validator =
           vine.compile(vine.object({'age': vine.number().optional()}));
       expect(() => validator.validate({'age': 'not a number'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 }

@@ -16,7 +16,8 @@ void main() {
           returnsNormally);
     });
 
-    test('is valid when value is object and non validated values are deletes', () {
+    test('is valid when value is object and non validated values are deletes',
+        () {
       final payload = {
         'firstname': 'John',
         'lastname': 'Doe',
@@ -36,7 +37,8 @@ void main() {
       expect(data, payload);
     });
 
-    test('is valid when value is object and non validated values are deletes', () {
+    test('is valid when value is object and non validated values are deletes',
+        () {
       final payload = {
         'obj': {
           'firstname': 'John',
@@ -129,12 +131,15 @@ void main() {
         'roles': vine.array(roleSchema),
       }));
 
-      expect(() => validator.validate(payload), throwsA(isA<ValidationException>()));
+      expect(() => validator.validate(payload),
+          throwsA(isA<VineValidationException>()));
     });
   });
 
   group('Group object validation', () {
-    test('cannot be valid when object schema is called and email field is missing', () {
+    test(
+        'cannot be valid when object schema is called and email field is missing',
+        () {
       final payload = {
         'hasField': true,
         'user': {
@@ -153,10 +158,13 @@ void main() {
         }),
       }));
 
-      expect(() => validator.validate(payload), throwsA(isA<ValidationException>()));
+      expect(() => validator.validate(payload),
+          throwsA(isA<VineValidationException>()));
     });
 
-    test('should be valid when object schema is called and email field is present', () {
+    test(
+        'should be valid when object schema is called and email field is present',
+        () {
       final payload = {
         'user': {
           'firstname': 'John',
@@ -177,7 +185,9 @@ void main() {
       expect(() => validator.validate(payload), returnsNormally);
     });
 
-    test('cannot be valid when object schema is called and email field is missing', () {
+    test(
+        'cannot be valid when object schema is called and email field is missing',
+        () {
       final payload = {
         'hasField': true,
         'user': {
@@ -197,7 +207,8 @@ void main() {
         })
       }));
 
-      expect(() => validator.validate(payload), throwsA(isA<ValidationException>()));
+      expect(() => validator.validate(payload),
+          throwsA(isA<VineValidationException>()));
     });
   });
 }

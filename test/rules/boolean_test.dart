@@ -51,7 +51,7 @@ void main() {
       final validator = vine.compile(vine.object({'value': vine.boolean()}));
 
       expect(() => validator.validate({'value': 'foo'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 }

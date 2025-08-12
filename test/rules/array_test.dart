@@ -95,7 +95,7 @@ void main() {
           () => validator.validate({
                 'value': ['foo', 1, true]
               }),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('is invalid when value is not array', () {
@@ -103,7 +103,7 @@ void main() {
           vine.compile(vine.object({'value': vine.array(vine.string())}));
 
       expect(() => validator.validate({'value': 'foo'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -138,7 +138,7 @@ void main() {
           () => validator.validate({
                 'array': ['foo']
               }),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 }

@@ -48,7 +48,7 @@ void main() {
       ]),
     }));
 
-    expect(
-        () => validator.validate(payload), throwsA(isA<ValidationException>()));
+    expect(() => validator.validate(payload),
+        throwsA(isA<VineValidationException>()));
   });
 }

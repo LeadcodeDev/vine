@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/exceptions/validation_exception.dart';
 import 'package:vine/src/mapped_errors.dart';
@@ -42,8 +40,8 @@ class SimpleErrorReporter implements VineErrorReporter {
   }
 
   @override
-  Exception createError(Object message) {
-    return ValidationException(json.encode(message));
+  Exception createError(Map<String, dynamic> message) {
+    return VineValidationException(message);
   }
 
   @override

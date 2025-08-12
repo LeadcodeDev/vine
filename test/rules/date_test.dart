@@ -51,8 +51,8 @@ void main() {
       'date': vine.date(),
     }));
 
-    expect(
-        () => validator.validate(payload), throwsA(isA<ValidationException>()));
+    expect(() => validator.validate(payload),
+        throwsA(isA<VineValidationException>()));
   });
 
   test('should be valid when value is between dates', () {
@@ -70,8 +70,8 @@ void main() {
       'date': vine.date().between(DateTime(2022), DateTime(2023)),
     }));
 
-    expect(
-        () => validator.validate(payload), throwsA(isA<ValidationException>()));
+    expect(() => validator.validate(payload),
+        throwsA(isA<VineValidationException>()));
   });
 
   group('Date rules', () {
@@ -97,7 +97,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('should be valid when value is after the target date', () {
@@ -122,7 +122,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('should be valid when value is before the target field', () {
@@ -150,7 +150,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('should be valid when value is after the target field', () {
@@ -178,7 +178,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('should be valid when value is between date fields', () {
@@ -210,7 +210,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test(
@@ -227,7 +227,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test(
@@ -245,7 +245,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('should be valid when value has attempted value after transformation',

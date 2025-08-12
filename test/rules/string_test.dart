@@ -25,7 +25,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid maxLength', () {
@@ -44,7 +44,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid fixedLength', () {
@@ -63,7 +63,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid email', () {
@@ -82,7 +82,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid phone', () {
@@ -101,7 +101,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid custom phone regexp', () {
@@ -129,7 +129,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid url', () {
@@ -148,7 +148,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid alpha', () {
@@ -167,7 +167,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid alphaNumeric', () {
@@ -186,7 +186,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid startsWith', () {
@@ -208,7 +208,7 @@ void main() {
       };
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('valid endsWith', () {
@@ -230,7 +230,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     group('confirmed', () {
@@ -262,7 +262,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -351,7 +351,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -372,7 +372,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -392,7 +392,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('can be optional', () {
@@ -411,7 +411,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
   });
 
@@ -432,7 +432,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('cannot be too long with [email, minLength, maxLength] rules', () {
@@ -442,7 +442,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     group('alphaNumeric', () {
@@ -466,7 +466,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
 
       test(
@@ -479,7 +479,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -531,7 +531,7 @@ void main() {
       }));
 
       expect(() => validator.validate(payload),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     group('uuid', () {
@@ -561,7 +561,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -584,7 +584,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -657,7 +657,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -682,7 +682,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
 
@@ -712,7 +712,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
 
       test('should be valid when field does not exist but value is provided',
@@ -738,7 +738,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
 
       test('can be optional when required fields has one or many missing', () {
@@ -765,7 +765,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
 
       //
@@ -793,7 +793,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
 
       test('can be optional when required fields has one or many exists', () {
@@ -817,7 +817,7 @@ void main() {
         }));
 
         expect(() => validator.validate(payload),
-            throwsA(isA<ValidationException>()));
+            throwsA(isA<VineValidationException>()));
       });
     });
   });

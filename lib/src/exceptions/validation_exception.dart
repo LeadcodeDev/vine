@@ -1,11 +1,12 @@
-class ValidationException implements Exception {
+import 'dart:convert';
+
+class VineValidationException implements Exception {
   String code = 'E_VALIDATION_ERROR';
   final statusCode = 422;
 
-  final String message;
-  ValidationException(this.message);
-
+  final Map<String, dynamic> message;
+  VineValidationException(this.message);
 
   @override
-  String toString() => '[$code]: $message';
+  String toString() => '[$code]: ${json.encode(message)}';
 }

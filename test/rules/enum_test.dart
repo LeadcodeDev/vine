@@ -32,7 +32,7 @@ void main() {
           vine.compile(vine.object({'value': vine.enumerate(MyEnum.values)}));
 
       expect(() => validator.validate({'value': 'value4'}),
-          throwsA(isA<ValidationException>()));
+          throwsA(isA<VineValidationException>()));
     });
 
     test('is valid when value is nullable', () {

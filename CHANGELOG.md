@@ -1,3 +1,8 @@
+## 1.7.1
+
+- Rename `ValidationException` class to `VineValidationException` to prevent collision with `ValidationException` class from another packages
+- Change `ValidationException.message` from `String` to `Map<String, dynamic>`
+
 ## 1.7.0
 
 - Rename `Field` class to `VineField`

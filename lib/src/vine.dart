@@ -132,11 +132,11 @@ final class Validator implements VineValidatorContract {
 
   VineSchema get schema => _schema.clone();
 
-  (ValidationException?, T?) tryValidate<T>(dynamic data) {
+  (VineValidationException?, T?) tryValidate<T>(dynamic data) {
     try {
       final result = validate(data);
       return (null, result);
-    } on ValidationException catch (exception) {
+    } on VineValidationException catch (exception) {
       return (exception, null);
     }
   }
