@@ -3,7 +3,7 @@ import 'package:vine/src/contracts/vine.dart';
 
 final class VineNullableRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value == null) {
       field.canBeContinue = false;
     }
@@ -12,7 +12,7 @@ final class VineNullableRule implements VineRule {
 
 final class VineOptionalRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value is MissingValue) {
       field.canBeContinue = false;
       ctx.data.remove(field.name);
@@ -26,7 +26,7 @@ final class VineRequiredIfExistRule implements VineRule {
   const VineRequiredIfExistRule(this.values);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final currentContext = ctx.getFieldContext(field.customKeys);
     List<bool> matchs = [];
 
@@ -50,7 +50,7 @@ final class VineRequiredIfAnyExistRule implements VineRule {
   const VineRequiredIfAnyExistRule(this.values);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final currentContext = ctx.getFieldContext(field.customKeys);
     bool hasMatch = false;
 
@@ -77,7 +77,7 @@ final class VineRequiredIfMissingRule implements VineRule {
   const VineRequiredIfMissingRule(this.values);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final currentContext = ctx.getFieldContext(field.customKeys);
     List<bool> matchs = [];
 
@@ -101,7 +101,7 @@ final class VineRequiredIfAnyMissingRule implements VineRule {
   const VineRequiredIfAnyMissingRule(this.values);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final currentContext = ctx.getFieldContext(field.customKeys);
     bool hasMatch = false;
 
@@ -123,12 +123,12 @@ final class VineRequiredIfAnyMissingRule implements VineRule {
 }
 
 final class VineTransformRule implements VineRule {
-  final Function(VineValidationContext, FieldContext) fn;
+  final Function(VineValidationContext, VineFieldContext) fn;
 
   const VineTransformRule(this.fn);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final result = fn(ctx, field);
     field.mutate(result);
   }

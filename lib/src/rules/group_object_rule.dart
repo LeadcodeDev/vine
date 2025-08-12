@@ -10,7 +10,7 @@ final class VineObjectGroupRule implements VineRule {
   const VineObjectGroupRule(this.fn, this.object);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (fn(ctx.data as Map<String, dynamic>)) {
       field.customKeys.add(field.name);
       VineObjectRule(object, null).handle(ctx, field);
@@ -19,11 +19,11 @@ final class VineObjectGroupRule implements VineRule {
 }
 
 final class VineObjectOtherwiseRule implements VineRule {
-  final Function(VineValidationContext, FieldContext) fn;
+  final Function(VineValidationContext, VineFieldContext) fn;
   const VineObjectOtherwiseRule(this.fn);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     fn(ctx, field);
   }
 }

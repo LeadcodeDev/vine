@@ -10,7 +10,7 @@ final class VineObjectRule implements VineRule {
   const VineObjectRule(this.payload, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final fieldValue = field.value;
     if (fieldValue is! Map) {
       final error = ctx.errorReporter.format('object', field, message, {});
@@ -28,7 +28,7 @@ final class VineObjectRule implements VineRule {
       final key = entry.key;
       final schema = entry.value;
 
-      final currentField = FieldPool.acquire(
+      final currentField = VineFieldPool.acquire(
           key, fieldValue.containsKey(key) ? field.value[key] : MissingValue())
         ..customKeys.addAll(List.of(field.customKeys, growable: false));
 
@@ -49,7 +49,7 @@ final class VineObjectRule implements VineRule {
       resultMap[key] = currentField.value;
 
       shouldBreak = !currentField.canBeContinue || ctx.errorReporter.hasError;
-      FieldPool.release(currentField);
+      VineFieldPool.release(currentField);
     }
 
     final cleanedMap = {

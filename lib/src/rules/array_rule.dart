@@ -10,7 +10,7 @@ final class VineArrayRule implements VineRule {
   const VineArrayRule(this.schema);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final copy = field.customKeys;
 
     if (field.value case List values) {
@@ -18,7 +18,7 @@ final class VineArrayRule implements VineRule {
       final copyRules = currentSchema.rules.toList();
 
       for (int i = 0; i < values.length; i++) {
-        final currentField = FieldPool.acquire(field.name, values[i]);
+        final currentField = VineFieldPool.acquire(field.name, values[i]);
 
         currentSchema.rules.clear();
         currentSchema.rules.addAll(copyRules);
@@ -31,7 +31,7 @@ final class VineArrayRule implements VineRule {
           ..addAll(copy);
 
         currentField.mutate([...field.value, currentField.value]);
-        FieldPool.release(currentField);
+        VineFieldPool.release(currentField);
       }
 
       return;
@@ -48,10 +48,12 @@ final class VineArrayUniqueRule implements VineRule {
   const VineArrayUniqueRule(this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value is! List) {
-      final error = ctx.errorReporter.format('array.unique', field, message, {});
-      ctx.errorReporter.report('array.unique', [...field.customKeys, field.name], error);
+      final error =
+          ctx.errorReporter.format('array.unique', field, message, {});
+      ctx.errorReporter
+          .report('array.unique', [...field.customKeys, field.name], error);
       return;
     }
 
@@ -59,8 +61,10 @@ final class VineArrayUniqueRule implements VineRule {
     final unique = values.toSet().toList();
 
     if (values.length != unique.length) {
-      final error = ctx.errorReporter.format('array.unique', field, message, {});
-      ctx.errorReporter.report('array.unique', [...field.customKeys, field.name], error);
+      final error =
+          ctx.errorReporter.format('array.unique', field, message, {});
+      ctx.errorReporter
+          .report('array.unique', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -72,13 +76,15 @@ final class VineArrayMinLengthRule implements VineRule {
   const VineArrayMinLengthRule(this.minValue, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if ((field.value as List).length < minValue) {
-      final error = ctx.errorReporter.format('array.minLength', field, message, {
+      final error =
+          ctx.errorReporter.format('array.minLength', field, message, {
         'min': minValue,
       });
 
-      ctx.errorReporter.report('array.minLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('array.minLength', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -90,13 +96,15 @@ final class VineArrayMaxLengthRule implements VineRule {
   const VineArrayMaxLengthRule(this.maxValue, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if ((field.value as List).length > maxValue) {
-      final error = ctx.errorReporter.format('array.maxLength', field, message, {
+      final error =
+          ctx.errorReporter.format('array.maxLength', field, message, {
         'max': maxValue,
       });
 
-      ctx.errorReporter.report('array.maxLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('array.maxLength', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -108,12 +116,14 @@ final class VineArrayFixedLengthRule implements VineRule {
   const VineArrayFixedLengthRule(this.count, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if ((field.value as List).length != count) {
-      final error = ctx.errorReporter.format('array.fixedLength', field, message, {
+      final error =
+          ctx.errorReporter.format('array.fixedLength', field, message, {
         'length': count,
       });
-      ctx.errorReporter.report('array.fixedLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter.report(
+          'array.fixedLength', [...field.customKeys, field.name], error);
     }
   }
 }

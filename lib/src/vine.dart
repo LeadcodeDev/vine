@@ -109,8 +109,8 @@ final class Vine {
   Map<String, dynamic> validate(Map<String, dynamic> data, VineSchema schema) {
     final reporter = errorReporter({});
 
-    final validatorContext = ValidatorContext(reporter, data);
-    final field = Field('', data);
+    final validatorContext = VineValidatorContext(reporter, data);
+    final field = VineField('', data);
     schema.parse(validatorContext, field);
 
     if (reporter.hasError) {
@@ -123,7 +123,7 @@ final class Vine {
   OpenApiReporter get openApi => OpenApiReporter();
 }
 
-final class Validator implements ValidatorContract {
+final class Validator implements VineValidatorContract {
   final VineSchema _schema;
   final Map<String, String> errors;
   final reporter = vine.errorReporter({});
@@ -142,8 +142,8 @@ final class Validator implements ValidatorContract {
   }
 
   T validate<T>(dynamic data) {
-    final validatorContext = ValidatorContext(reporter, data);
-    final field = Field('', data);
+    final validatorContext = VineValidatorContext(reporter, data);
+    final field = VineField('', data);
     _schema.parse(validatorContext, field);
 
     if (reporter.hasError) {

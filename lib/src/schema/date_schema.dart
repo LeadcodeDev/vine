@@ -48,7 +48,7 @@ final class VineDateSchema extends RuleParser implements VineDate {
   }
 
   @override
-  VineDate transform(Function(VineValidationContext, FieldContext) fn) {
+  VineDate transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

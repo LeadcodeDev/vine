@@ -9,10 +9,10 @@ final class VineUnionRule implements VineRule {
   const VineUnionRule(this.schemas);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final List errors = [];
     field.customKeys.add(field.name);
-    final currentField = FieldPool.acquire(field.name, field.value);
+    final currentField = VineFieldPool.acquire(field.name, field.value);
 
     currentField.isUnion = true;
     for (final schema in schemas) {
@@ -23,12 +23,13 @@ final class VineUnionRule implements VineRule {
       }
     }
     currentField.isUnion = false;
-    FieldPool.release(currentField);
+    VineFieldPool.release(currentField);
 
     if (errors.length == schemas.length) {
       final error = ctx.errorReporter.format('union', field, null, {
         'types': schemas
-            .map((schema) => schema.runtimeType.toString().replaceFirst('Schema', ''))
+            .map((schema) =>
+                schema.runtimeType.toString().replaceFirst('Schema', ''))
             .join(', ')
       });
 

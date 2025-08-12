@@ -33,7 +33,7 @@ final class VineUnionSchema extends RuleParser implements VineUnion {
   }
 
   @override
-  VineUnion transform(Function(VineValidationContext, FieldContext) fn) {
+  VineUnion transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

@@ -11,7 +11,7 @@ final class VineBooleanSchema extends RuleParser implements VineBoolean {
   VineBooleanSchema(super._rules);
 
   @override
-  VineBoolean transform(Function(VineValidationContext, FieldContext) fn) {
+  VineBoolean transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

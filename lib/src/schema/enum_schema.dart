@@ -34,7 +34,7 @@ final class VineEnumSchema<T extends VineEnumerable> extends RuleParser
   }
 
   @override
-  VineEnum<T> transform(Function(VineValidationContext, FieldContext) fn) {
+  VineEnum<T> transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

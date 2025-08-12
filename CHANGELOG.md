@@ -1,3 +1,8 @@
+## 1.7.0
+
+- Rename `Field` class to `VineField`
+- Rename `ValidatorContext` class to `VineValidatorContext` to prevent collision with `ValidatorContext` class from another packages
+
 ## 1.6.2
 
 - Rename `ErrorReporter` to `VineErrorReporter` to prevent collision with `ErrorReporter` class from anither packages

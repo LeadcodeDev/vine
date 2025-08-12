@@ -2,12 +2,12 @@ import 'dart:collection';
 
 import 'package:vine/vine.dart';
 
-class FieldPool {
-  static final _pool = Queue<Field>();
+class VineFieldPool {
+  static final _pool = Queue<VineField>();
   static final int _maxSize = 1000;
 
-  static Field acquire(String name, dynamic value) {
-    if (_pool.isEmpty) return Field(name, value);
+  static VineField acquire(String name, dynamic value) {
+    if (_pool.isEmpty) return VineField(name, value);
     return _pool.removeFirst()
       ..name = name
       ..value = value
@@ -15,7 +15,7 @@ class FieldPool {
       ..customKeys.clear();
   }
 
-  static void release(Field field) {
+  static void release(VineField field) {
     if (_pool.length < _maxSize) {
       _pool.add(field);
     }

@@ -78,7 +78,7 @@ final class VineNumberSchema extends RuleParser implements VineNumber {
   }
 
   @override
-  VineNumber transform(Function(VineValidationContext, FieldContext) fn) {
+  VineNumber transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

@@ -11,7 +11,7 @@ final class VineAnySchema extends RuleParser implements VineAny {
   VineAnySchema(super._rules);
 
   @override
-  VineAny transform(Function(VineValidationContext, FieldContext) fn) {
+  VineAny transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

@@ -35,7 +35,7 @@ final class VineArraySchema extends RuleParser implements VineArray {
   }
 
   @override
-  VineArray transform(Function(VineValidationContext, FieldContext) fn) {
+  VineArray transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }
@@ -91,11 +91,11 @@ final class VineArraySchema extends RuleParser implements VineArray {
 
   @override
   Map<String, dynamic> introspect({String? name}) {
-    final itemsSchema = rules.whereType<VineArrayRule>().firstOrNull?.schema.introspect();
+    final itemsSchema =
+        rules.whereType<VineArrayRule>().firstOrNull?.schema.introspect();
     itemsSchema?.remove('required');
     final example = itemsSchema?['example'];
     itemsSchema?.remove('example');
-
 
     final minValue = _getRuleValue<VineArrayMinLengthRule>();
     final maxValue = _getRuleValue<VineArrayMaxLengthRule>();

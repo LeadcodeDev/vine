@@ -1,6 +1,6 @@
 import 'package:vine/src/contracts/vine.dart';
 
-final class ValidatorContext<T extends VineErrorReporter>
+final class VineValidatorContext<T extends VineErrorReporter>
     implements VineValidationContext<T> {
   @override
   final T errorReporter;
@@ -21,10 +21,10 @@ final class ValidatorContext<T extends VineErrorReporter>
     return data;
   }
 
-  ValidatorContext(this.errorReporter, this.data);
+  VineValidatorContext(this.errorReporter, this.data);
 }
 
-final class Field implements FieldContext {
+final class VineField implements VineFieldContext {
   @override
   final List<String> customKeys = [];
 
@@ -40,7 +40,7 @@ final class Field implements FieldContext {
   @override
   bool isUnion = false;
 
-  Field(this.name, this.value);
+  VineField(this.name, this.value);
 
   @override
   void mutate(dynamic value) {

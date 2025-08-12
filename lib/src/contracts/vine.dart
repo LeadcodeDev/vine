@@ -5,7 +5,7 @@ abstract interface class VineErrorReporter {
 
   bool hasErrorForField(String fieldName);
 
-  String format(String rule, FieldContext field, String? message,
+  String format(String rule, VineFieldContext field, String? message,
       Map<String, dynamic> options);
 
   void report(String rule, List<String> keys, String message);
@@ -15,7 +15,7 @@ abstract interface class VineErrorReporter {
   void clear();
 }
 
-abstract interface class ValidatorContract {}
+abstract interface class VineValidatorContract {}
 
 abstract interface class VineValidationContext<T extends VineErrorReporter> {
   T get errorReporter;
@@ -25,7 +25,7 @@ abstract interface class VineValidationContext<T extends VineErrorReporter> {
   Map<String, dynamic> getFieldContext(List<String> keys);
 }
 
-abstract interface class FieldContext {
+abstract interface class VineFieldContext {
   List<String> get customKeys;
 
   abstract String name;
@@ -37,6 +37,6 @@ abstract interface class FieldContext {
   void mutate(dynamic value);
 }
 
-typedef ParseHandler = void Function(VineValidationContext, FieldContext);
+typedef ParseHandler = void Function(VineValidationContext, VineFieldContext);
 
 final class MissingValue {}

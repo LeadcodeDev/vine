@@ -20,7 +20,7 @@ final class VineObjectSchema extends RuleParser implements VineObject {
   }
 
   @override
-  VineObject transform(Function(VineValidationContext, FieldContext) fn) {
+  VineObject transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

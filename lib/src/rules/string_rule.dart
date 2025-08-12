@@ -4,7 +4,8 @@ import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/helper.dart';
 
-final europeanPhoneRegex = RegExp(r'^\+?[0-9]{1,4}[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{4,10}$');
+final europeanPhoneRegex =
+    RegExp(r'^\+?[0-9]{1,4}[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{4,10}$');
 
 final class VineStringRule implements VineRule {
   final String? message;
@@ -12,14 +13,15 @@ final class VineStringRule implements VineRule {
   const VineStringRule(this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value is! String) {
       if (field.isUnion) {
         throw Exception('Union type is not supported for string type');
       }
 
       final error = ctx.errorReporter.format('string', field, message, {});
-      ctx.errorReporter.report('string', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('string', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -31,13 +33,14 @@ final class VineMinLengthRule implements VineRule {
   const VineMinLengthRule(this.minValue, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when value.length < minValue) {
       final error = ctx.errorReporter.format('minLength', field, message, {
         'min': minValue,
       });
 
-      ctx.errorReporter.report('minLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('minLength', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -49,13 +52,14 @@ final class VineMaxLengthRule implements VineRule {
   const VineMaxLengthRule(this.maxValue, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when value.length > maxValue) {
       final error = ctx.errorReporter.format('maxLength', field, message, {
         'max': maxValue,
       });
 
-      ctx.errorReporter.report('maxLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('maxLength', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -67,13 +71,14 @@ final class VineFixedLengthRule implements VineRule {
   const VineFixedLengthRule(this.count, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when value.length != count) {
       final error = ctx.errorReporter.format('fixedLength', field, message, {
         'length': count,
       });
 
-      ctx.errorReporter.report('fixedLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('fixedLength', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -84,10 +89,11 @@ final class VineEmailRule implements VineRule {
   const VineEmailRule(this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !isEmailSimd(value)) {
       final error = ctx.errorReporter.format('email', field, message, {});
-      ctx.errorReporter.report('email', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('email', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -99,11 +105,12 @@ final class VinePhoneRule implements VineRule {
   const VinePhoneRule(this.regex, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final currentRegexp = regex ?? europeanPhoneRegex;
     if (field.value case String value when !currentRegexp.hasMatch(value)) {
       final error = ctx.errorReporter.format('phone', field, message, {});
-      ctx.errorReporter.report('phone', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('phone', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -115,11 +122,12 @@ final class VineIpAddressRule implements VineRule {
   const VineIpAddressRule(this.version, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.isIP(version?.value)) {
-      final error = ctx.errorReporter.format(
-          'ipAddress', field, message, {'version': version ?? IpAddressVersion.values.toList()});
-      ctx.errorReporter.report('ipAddress', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter.format('ipAddress', field, message,
+          {'version': version ?? IpAddressVersion.values.toList()});
+      ctx.errorReporter
+          .report('ipAddress', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -131,13 +139,14 @@ final class VineRegexRule implements VineRule {
   const VineRegexRule(this.regex, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !regex.hasMatch(value)) {
       final error = ctx.errorReporter.format('regex', field, message, {
         'pattern': regex.pattern,
       });
 
-      ctx.errorReporter.report('regex', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('regex', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -148,10 +157,11 @@ final class VineHexColorRule implements VineRule {
   const VineHexColorRule(this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.isHexColor) {
       final error = ctx.errorReporter.format('hexColor', field, message, {});
-      ctx.errorReporter.report('hexColor', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('hexColor', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -163,11 +173,11 @@ final class VineUrlRule implements VineRule {
   final bool allowUnderscores;
   final String? message;
 
-  const VineUrlRule(
-      this.protocols, this.requireTld, this.requireProtocol, this.allowUnderscores, this.message);
+  const VineUrlRule(this.protocols, this.requireTld, this.requireProtocol,
+      this.allowUnderscores, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value
         when !value.isURL({
           'protocols': protocols,
@@ -187,10 +197,11 @@ final class VineAlphaRule implements VineRule {
   const VineAlphaRule(this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.isAlpha) {
       final error = ctx.errorReporter.format('alpha', field, message, {});
-      ctx.errorReporter.report('alpha', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('alpha', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -201,10 +212,12 @@ final class VineAlphaNumericRule implements VineRule {
   const VineAlphaNumericRule(this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.isAlphanumeric) {
-      final error = ctx.errorReporter.format('alphaNumeric', field, message, {});
-      ctx.errorReporter.report('alphaNumeric', [...field.customKeys, field.name], error);
+      final error =
+          ctx.errorReporter.format('alphaNumeric', field, message, {});
+      ctx.errorReporter
+          .report('alphaNumeric', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -216,11 +229,12 @@ final class VineStartWithRule implements VineRule {
   const VineStartWithRule(this.attemptedValue, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.startsWith(attemptedValue)) {
-      final error =
-          ctx.errorReporter.format('startWith', field, message, {'value': attemptedValue});
-      ctx.errorReporter.report('startWith', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter
+          .format('startWith', field, message, {'value': attemptedValue});
+      ctx.errorReporter
+          .report('startWith', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -232,10 +246,12 @@ final class VineEndWithRule implements VineRule {
   const VineEndWithRule(this.attemptedValue, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.endsWith(attemptedValue)) {
-      final error = ctx.errorReporter.format('endWith', field, message, {'value': attemptedValue});
-      ctx.errorReporter.report('endWith', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter
+          .format('endWith', field, message, {'value': attemptedValue});
+      ctx.errorReporter
+          .report('endWith', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -248,21 +264,23 @@ final class VineConfirmedRule implements VineRule {
   const VineConfirmedRule(this.targetField, this.include, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final confirmedKey = targetField ?? '${field.name}_confirmation';
     final hasKey = ctx.data.containsKey(confirmedKey);
 
     if (!hasKey) {
-      final error =
-          ctx.errorReporter.format('missingProperty', field, message, {'field': confirmedKey});
-      ctx.errorReporter.report('missingProperty', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter
+          .format('missingProperty', field, message, {'field': confirmedKey});
+      ctx.errorReporter
+          .report('missingProperty', [...field.customKeys, field.name], error);
     }
 
     final currentValue = ctx.data[confirmedKey];
     if ((field.value as String) != currentValue) {
-      final error =
-          ctx.errorReporter.format('confirmed', field, message, {'attemptedName': confirmedKey});
-      ctx.errorReporter.report('confirmed', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter
+          .format('confirmed', field, message, {'attemptedName': confirmedKey});
+      ctx.errorReporter
+          .report('confirmed', [...field.customKeys, field.name], error);
     }
 
     if (!include) {
@@ -273,7 +291,7 @@ final class VineConfirmedRule implements VineRule {
 
 final class VineTrimRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     field.mutate((field.value as String).trim());
   }
 }
@@ -284,7 +302,7 @@ final class VineNormalizeEmailRule implements VineRule {
   const VineNormalizeEmailRule(this.lowerCase);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     field.mutate((field.value as String).normalizeEmail({
       'lowercase': lowerCase,
     }));
@@ -293,21 +311,21 @@ final class VineNormalizeEmailRule implements VineRule {
 
 final class VineUpperCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     field.mutate((field.value as String).toUpperCase());
   }
 }
 
 final class VineLowerCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     field.mutate((field.value as String).toLowerCase());
   }
 }
 
 final class VineToCamelCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value) {
       final buffer = StringBuffer();
       final parts = value.split(RegExp(r'[_\s-]'));
@@ -326,7 +344,7 @@ final class VineToCamelCaseRule implements VineRule {
 
 final class VineToKebabCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -343,7 +361,7 @@ final class VineToKebabCaseRule implements VineRule {
 
 final class VineToSnakeCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -360,7 +378,7 @@ final class VineToSnakeCaseRule implements VineRule {
 
 final class VineToPascalCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -375,7 +393,7 @@ final class VineToPascalCaseRule implements VineRule {
 
 final class VineToTitleCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -391,7 +409,7 @@ final class VineToTitleCaseRule implements VineRule {
 
 final class VineToSentenceCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -409,7 +427,7 @@ final class VineToSentenceCaseRule implements VineRule {
 
 final class VineToCapitalCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -425,7 +443,7 @@ final class VineToCapitalCaseRule implements VineRule {
 
 final class VineToConstantCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -442,7 +460,7 @@ final class VineToConstantCaseRule implements VineRule {
 
 final class VineToDotCaseRule implements VineRule {
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
     final parts = (field.value as String).split(RegExp(r'\[_\s-'));
 
@@ -464,13 +482,14 @@ final class VineUuidRule implements VineRule {
   const VineUuidRule(this.version, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.isUUID()) {
       final error = ctx.errorReporter.format('uuid', field, message, {
         'version': version ?? UuidVersion.values.toList(),
       });
 
-      ctx.errorReporter.report('uuid', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('uuid', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -481,10 +500,11 @@ final class VineCreditCardRule implements VineRule {
   const VineCreditCardRule(this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value when !value.isCreditCard) {
       final error = ctx.errorReporter.format('creditCard', field, message, {});
-      ctx.errorReporter.report('creditCard', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('creditCard', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -496,12 +516,14 @@ final class VineSameAsRule implements VineRule {
   const VineSameAsRule(this.value, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final currentContext = ctx.getFieldContext(field.customKeys);
 
     if (currentContext[value] != field.value) {
-      final error = ctx.errorReporter.format('sameAs', field, message, {'field': value});
-      ctx.errorReporter.report('sameAs', [...field.customKeys, field.name], error);
+      final error =
+          ctx.errorReporter.format('sameAs', field, message, {'field': value});
+      ctx.errorReporter
+          .report('sameAs', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -513,12 +535,14 @@ final class VineNotSameAsRule implements VineRule {
   const VineNotSameAsRule(this.value, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final currentContext = ctx.getFieldContext(field.customKeys);
 
     if (currentContext[value] == field.value) {
-      final error = ctx.errorReporter.format('notSameAs', field, message, {'field': value});
-      ctx.errorReporter.report('notSameAs', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter
+          .format('notSameAs', field, message, {'field': value});
+      ctx.errorReporter
+          .report('notSameAs', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -530,10 +554,12 @@ final class VineInListRule implements VineRule {
   const VineInListRule(this.values, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (!values.contains(field.value)) {
-      final error = ctx.errorReporter.format('inList', field, message, {'values': values});
-      ctx.errorReporter.report('inList', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter
+          .format('inList', field, message, {'values': values});
+      ctx.errorReporter
+          .report('inList', [...field.customKeys, field.name], error);
     }
   }
 }
@@ -545,10 +571,12 @@ final class VineNotInListRule implements VineRule {
   const VineNotInListRule(this.values, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (values.contains(field.value)) {
-      final error = ctx.errorReporter.format('notInList', field, message, {'values': values});
-      ctx.errorReporter.report('notInList', [...field.customKeys, field.name], error);
+      final error = ctx.errorReporter
+          .format('notInList', field, message, {'values': values});
+      ctx.errorReporter
+          .report('notInList', [...field.customKeys, field.name], error);
     }
   }
 }

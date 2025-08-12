@@ -9,7 +9,7 @@ final class VineEnumRule<T> implements VineRule {
   const VineEnumRule(this.source);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value == null) {
       return;
     }

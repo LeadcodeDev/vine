@@ -16,14 +16,18 @@ class SimpleErrorReporter implements VineErrorReporter {
   bool hasError = false;
 
   @override
-  bool hasErrorForField(String fieldName) => errors.any((element) => element['field'] == fieldName);
+  bool hasErrorForField(String fieldName) =>
+      errors.any((element) => element['field'] == fieldName);
 
   @override
-  String format(String rule, FieldContext field, String? message, Map<String, dynamic> options) {
-    String content = message ?? _errorMessages[field.name] ?? mappedErrors[rule]!;
+  String format(String rule, VineFieldContext field, String? message,
+      Map<String, dynamic> options) {
+    String content =
+        message ?? _errorMessages[field.name] ?? mappedErrors[rule]!;
 
     for (final element in options.entries) {
-      content = content.replaceAll('{${element.key}}', element.value.toString());
+      content =
+          content.replaceAll('{${element.key}}', element.value.toString());
     }
 
     return content

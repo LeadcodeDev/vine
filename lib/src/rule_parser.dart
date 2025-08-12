@@ -26,7 +26,7 @@ class RuleParser implements RuleParserContract {
     rules.add(rule);
   }
 
-  FieldContext parse(VineValidationContext ctx, FieldContext field) {
+  VineFieldContext parse(VineValidationContext ctx, VineFieldContext field) {
     if (isNullable) {
       addRule(VineNullableRule(), positioned: true);
     }

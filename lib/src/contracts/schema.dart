@@ -5,7 +5,7 @@ import 'package:vine/src/schema/object/object_schema.dart';
 abstract interface class VineSchema<T extends VineErrorReporter>
     implements SchemaIntrospection {
   /// Validate the field [field] the field to validate
-  void parse(VineValidationContext ctx, FieldContext field);
+  void parse(VineValidationContext ctx, VineFieldContext field);
 
   /// Clone the schema
   VineSchema clone();
@@ -57,7 +57,7 @@ abstract interface class BasicSchema<T extends VineSchema> {
 
   T requiredIfAnyMissing(List<String> values);
 
-  T transform(Function(VineValidationContext ctx, FieldContext field) fn);
+  T transform(Function(VineValidationContext ctx, VineFieldContext field) fn);
 
   T nullable();
 
@@ -467,7 +467,7 @@ abstract interface class VineGroup implements VineSchema {
   ///   .otherwise((ctx, field) {
   ///      field.customKeys.add(field.name);
   ///   });
-  VineGroup otherwise(Function(VineValidationContext, FieldContext) fn);
+  VineGroup otherwise(Function(VineValidationContext, VineFieldContext) fn);
 }
 
 abstract interface class VineArray

@@ -183,7 +183,7 @@ final class VineStringSchema extends RuleParser implements VineString {
   }
 
   @override
-  VineString transform(Function(VineValidationContext, FieldContext) fn) {
+  VineString transform(Function(VineValidationContext, VineFieldContext) fn) {
     super.addRule(VineTransformRule(fn));
     return this;
   }

@@ -8,8 +8,7 @@ final class VineBooleanRule implements VineRule {
   const VineBooleanRule(this.literal, this.message);
 
   @override
-  void handle(VineValidationContext ctx, FieldContext field) {
-
+  void handle(VineValidationContext ctx, VineFieldContext field) {
     final bool? content = !literal
         ? switch (field.value) {
             String() => bool.tryParse(field.value.toString()),
@@ -30,7 +29,8 @@ final class VineBooleanRule implements VineRule {
       }
 
       final error = ctx.errorReporter.format('boolean', field, message, {});
-      ctx.errorReporter.report('boolean', [...field.customKeys, field.name], error);
+      ctx.errorReporter
+          .report('boolean', [...field.customKeys, field.name], error);
     } else {
       field.mutate(content);
     }
