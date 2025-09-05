@@ -144,7 +144,24 @@ final class Validator implements VineValidatorContract {
   T validate<T>(dynamic data) {
     final validatorContext = VineValidatorContext(reporter, data);
     final field = VineField('', data);
-    _schema.parse(validatorContext, field);
+
+    // if (_schema case VineObjectSchema object) {
+    //   for (final property in object.properties.entries) {
+    //     if (property.value case VineNumberSchema number) {
+    //       print(['initial', property.key, number.rules]);
+    //     }
+    //   }
+    // }
+
+    // if (schema case VineObjectSchema object) {
+    //   for (final property in object.properties.entries) {
+    //     if (property.value case VineNumberSchema number) {
+    //       print(['derived', property.key, number.rules]);
+    //     }
+    //   }
+    // }
+
+    schema.parse(validatorContext, field);
 
     if (reporter.hasError) {
       throw reporter.createError({'errors': reporter.errors});

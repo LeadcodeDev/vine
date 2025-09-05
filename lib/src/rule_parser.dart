@@ -37,6 +37,7 @@ class RuleParser implements RuleParserContract {
 
     while (rules.isNotEmpty) {
       final rule = rules.removeFirst();
+
       rule.handle(ctx, field);
 
       if (!field.canBeContinue) break;

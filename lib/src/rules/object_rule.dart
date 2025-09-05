@@ -2,6 +2,7 @@ import 'package:vine/src/contracts/rule.dart';
 import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/field_pool.dart';
+import 'package:vine/vine.dart';
 
 final class VineObjectRule implements VineRule {
   final Map<String, VineSchema> payload;
