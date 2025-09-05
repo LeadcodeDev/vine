@@ -1,3 +1,7 @@
+## 1.7.2
+
+- Keep vine rules accross many validations
+
 ## 1.7.1
 
 - Rename `ValidationException` class to `VineValidationException` to prevent collision with `ValidationException` class from another packages
