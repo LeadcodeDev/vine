@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:vine/vine.dart';
 
 final class VineEnumSchema<T extends VineEnumerable> extends RuleParser
@@ -10,44 +8,44 @@ final class VineEnumSchema<T extends VineEnumerable> extends RuleParser
   VineEnumSchema(super._rules, this._source);
 
   @override
+  VineEnum<T> transform(Function(VineValidationContext, VineFieldContext) fn) {
+    super.rules.add(VineTransformRule(fn));
+    return this;
+  }
+
+  @override
   VineEnum<T> requiredIfExist(List<String> values) {
-    super.addRule(VineRequiredIfExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfExistRule(values), ...super.rules];
     return this;
   }
 
   @override
   VineEnum<T> requiredIfAnyExist(List<String> values) {
-    super.addRule(VineRequiredIfAnyExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyExistRule(values), ...rules];
     return this;
   }
 
   @override
   VineEnum<T> requiredIfMissing(List<String> values) {
-    super.addRule(VineRequiredIfMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineEnum<T> requiredIfAnyMissing(List<String> values) {
-    super.addRule(VineRequiredIfAnyMissingRule(values), positioned: true);
-    return this;
-  }
-
-  @override
-  VineEnum<T> transform(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineTransformRule(fn));
+    super.rules = [VineRequiredIfAnyMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineEnum<T> nullable() {
-    super.isNullable = true;
+    super.rules = [VineNullableRule(), ...rules];
     return this;
   }
 
   @override
   VineEnum<T> optional() {
-    super.isOptional = true;
+    super.rules = [VineOptionalRule(), ...rules];
     return this;
   }
 
@@ -59,7 +57,7 @@ final class VineEnumSchema<T extends VineEnumerable> extends RuleParser
 
   @override
   VineEnum<T> clone() {
-    return VineEnumSchema(Queue.of(rules), _source.toList());
+    return VineEnumSchema([...rules], _source.toList());
   }
 
   @override

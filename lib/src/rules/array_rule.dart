@@ -1,8 +1,7 @@
 import 'package:vine/src/contracts/rule.dart';
 import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
-import 'package:vine/src/field_pool.dart';
-import 'package:vine/src/rule_parser.dart';
+import 'package:vine/src/field.dart';
 
 final class VineArrayRule implements VineRule {
   final VineSchema schema;
@@ -11,27 +10,13 @@ final class VineArrayRule implements VineRule {
 
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
-    final copy = field.customKeys;
-
     if (field.value case List values) {
-      final currentSchema = schema as RuleParser;
-      final copyRules = currentSchema.rules.toList();
-
       for (int i = 0; i < values.length; i++) {
-        final currentField = VineFieldPool.acquire(field.name, values[i]);
+        final currentField = VineField(field.name, values[i])
+          ..customKeys = [...field.customKeys, i.toString()];
 
-        currentSchema.rules.clear();
-        currentSchema.rules.addAll(copyRules);
-
-        currentField.customKeys.add(i.toString());
         schema.parse(ctx, currentField);
-
-        currentField.customKeys
-          ..clear()
-          ..addAll(copy);
-
         currentField.mutate([...field.value, currentField.value]);
-        VineFieldPool.release(currentField);
       }
 
       return;

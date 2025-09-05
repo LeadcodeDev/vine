@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:vine/vine.dart';
 
 final class VineStringSchema extends RuleParser implements VineString {
@@ -9,37 +7,37 @@ final class VineStringSchema extends RuleParser implements VineString {
 
   @override
   VineString minLength(int value, {String? message}) {
-    super.addRule(VineMinLengthRule(value, message));
+    super.rules.add(VineMinLengthRule(value, message));
     return this;
   }
 
   @override
   VineString maxLength(int value, {String? message}) {
-    super.addRule(VineMaxLengthRule(value, message));
+    super.rules.add(VineMaxLengthRule(value, message));
     return this;
   }
 
   @override
   VineString fixedLength(int value, {String? message}) {
-    super.addRule(VineFixedLengthRule(value, message));
+    super.rules.add(VineFixedLengthRule(value, message));
     return this;
   }
 
   @override
   VineString email({String? message}) {
-    super.addRule(VineEmailRule(message));
+    super.rules.add(VineEmailRule(message));
     return this;
   }
 
   @override
   VineString phone({RegExp? match, String? message}) {
-    super.addRule(VinePhoneRule(match, message));
+    super.rules.add(VinePhoneRule(match, message));
     return this;
   }
 
   @override
   VineString ipAddress({IpAddressVersion? version, String? message}) {
-    super.addRule(VineIpAddressRule(version, message));
+    super.rules.add(VineIpAddressRule(version, message));
     return this;
   }
 
@@ -50,153 +48,153 @@ final class VineStringSchema extends RuleParser implements VineString {
       bool requireProtocol = false,
       bool allowUnderscores = false,
       String? message}) {
-    super.addRule(VineUrlRule(
+    super.rules.add(VineUrlRule(
         protocols, requireTld, requireProtocol, allowUnderscores, message));
     return this;
   }
 
   @override
   VineString alpha({String? message}) {
-    super.addRule(VineAlphaRule(message));
+    super.rules.add(VineAlphaRule(message));
     return this;
   }
 
   @override
   VineString alphaNumeric({String? message}) {
-    super.addRule(VineAlphaNumericRule(message));
+    super.rules.add(VineAlphaNumericRule(message));
     return this;
   }
 
   @override
   VineString startsWith(String value, {String? message}) {
-    super.addRule(VineStartWithRule(value, message));
+    super.rules.add(VineStartWithRule(value, message));
     return this;
   }
 
   @override
   VineString endsWith(String value, {String? message}) {
-    super.addRule(VineEndWithRule(value, message));
+    super.rules.add(VineEndWithRule(value, message));
     return this;
   }
 
   @override
   VineString confirmed(
       {String? property, bool include = false, String? message}) {
-    super.addRule(VineConfirmedRule(property, include, message));
+    super.rules.add(VineConfirmedRule(property, include, message));
     return this;
   }
 
   @override
   VineString regex(RegExp expression, {String? message}) {
-    super.addRule(VineRegexRule(expression, message));
+    super.rules.add(VineRegexRule(expression, message));
     return this;
   }
 
   @override
   VineString trim() {
-    super.addRule(VineTrimRule());
+    super.rules.add(VineTrimRule());
     return this;
   }
 
   @override
   VineString normalizeEmail({bool lowercase = true}) {
-    super.addRule(VineNormalizeEmailRule(lowercase));
+    super.rules.add(VineNormalizeEmailRule(lowercase));
     return this;
   }
 
   @override
   VineString toUpperCase() {
-    super.addRule(VineUpperCaseRule());
+    super.rules.add(VineUpperCaseRule());
     return this;
   }
 
   @override
   VineString toLowerCase() {
-    super.addRule(VineLowerCaseRule());
+    super.rules.add(VineLowerCaseRule());
     return this;
   }
 
   @override
   VineString toCamelCase() {
-    super.addRule(VineToCamelCaseRule());
+    super.rules.add(VineToCamelCaseRule());
     return this;
   }
 
   @override
   VineString uuid({UuidVersion? version, String? message}) {
-    super.addRule(VineUuidRule(version, message));
+    super.rules.add(VineUuidRule(version, message));
     return this;
   }
 
   @override
   VineString isCreditCard({String? message}) {
-    super.addRule(VineCreditCardRule(message));
+    super.rules.add(VineCreditCardRule(message));
     return this;
   }
 
   @override
   VineString sameAs(String value, {String? message}) {
-    super.addRule(VineSameAsRule(value, message));
+    super.rules.add(VineSameAsRule(value, message));
     return this;
   }
 
   @override
   VineString notSameAs(String value, {String? message}) {
-    super.addRule(VineNotSameAsRule(value, message));
+    super.rules.add(VineNotSameAsRule(value, message));
     return this;
   }
 
   @override
   VineString inList(List<String> values, {String? message}) {
-    super.addRule(VineInListRule(values, message));
+    super.rules.add(VineInListRule(values, message));
     return this;
   }
 
   @override
   VineString notInList(List<String> values, {String? message}) {
-    super.addRule(VineNotInListRule(values, message));
+    super.rules.add(VineNotInListRule(values, message));
     return this;
   }
 
   @override
   VineString requiredIfExist(List<String> values) {
-    super.addRule(VineRequiredIfExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfExistRule(values), ...super.rules];
     return this;
   }
 
   @override
   VineString requiredIfAnyExist(List<String> values) {
-    super.addRule(VineRequiredIfAnyExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyExistRule(values), ...rules];
     return this;
   }
 
   @override
   VineString requiredIfMissing(List<String> values) {
-    super.addRule(VineRequiredIfMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineString requiredIfAnyMissing(List<String> values) {
-    super.addRule(VineRequiredIfAnyMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineString transform(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineTransformRule(fn));
+    super.rules.add(VineTransformRule(fn));
     return this;
   }
 
   @override
   VineString nullable() {
-    super.isNullable = true;
+    super.rules = [VineNullableRule(), ...rules];
     return this;
   }
 
   @override
   VineString optional() {
-    super.isOptional = true;
+    super.rules = [VineOptionalRule(), ...rules];
     return this;
   }
 
@@ -208,7 +206,7 @@ final class VineStringSchema extends RuleParser implements VineString {
 
   @override
   VineString clone() {
-    return VineStringSchema(Queue.of(rules));
+    return VineStringSchema([...rules]);
   }
 
   @override

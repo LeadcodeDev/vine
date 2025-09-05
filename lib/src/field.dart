@@ -26,7 +26,7 @@ final class VineValidatorContext<T extends VineErrorReporter>
 
 final class VineField implements VineFieldContext {
   @override
-  final List<String> customKeys = [];
+  List<String> customKeys = [];
 
   @override
   String name;

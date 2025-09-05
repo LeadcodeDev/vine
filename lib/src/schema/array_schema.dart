@@ -12,73 +12,73 @@ final class VineArraySchema extends RuleParser implements VineArray {
 
   @override
   VineArray minLength(int value, {String? message}) {
-    super.addRule(VineArrayMinLengthRule(value, message));
+    super.rules.add(VineArrayMinLengthRule(value, message));
     return this;
   }
 
   @override
   VineArray maxLength(int value, {String? message}) {
-    super.addRule(VineArrayMaxLengthRule(value, message));
+    super.rules.add(VineArrayMaxLengthRule(value, message));
     return this;
   }
 
   @override
   VineArray fixedLength(int value, {String? message}) {
-    super.addRule(VineArrayFixedLengthRule(value, message));
+    super.rules.add(VineArrayFixedLengthRule(value, message));
     return this;
   }
 
   @override
   VineArray unique({String? message}) {
-    super.addRule(VineArrayUniqueRule(message));
+    super.rules.add(VineArrayUniqueRule(message));
     return this;
   }
 
   @override
   VineArray transform(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineTransformRule(fn));
+    super.rules.add(VineTransformRule(fn));
     return this;
   }
 
   @override
   VineArray requiredIfExist(List<String> values) {
-    super.addRule(VineRequiredIfExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfExistRule(values), ...super.rules];
     return this;
   }
 
   @override
   VineArray requiredIfAnyExist(List<String> values) {
-    super.addRule(VineRequiredIfAnyExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyExistRule(values), ...rules];
     return this;
   }
 
   @override
   VineArray requiredIfMissing(List<String> values) {
-    super.addRule(VineRequiredIfMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineArray requiredIfAnyMissing(List<String> values) {
-    super.addRule(VineRequiredIfAnyMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineArray nullable() {
-    super.isNullable = true;
+    super.rules = [VineNullableRule(), ...rules];
     return this;
   }
 
   @override
   VineArray optional() {
-    super.isOptional = true;
+    super.rules = [VineOptionalRule(), ...rules];
     return this;
   }
 
   @override
   VineArray clone() {
-    return VineArraySchema(Queue.of(rules));
+    return VineArraySchema([...rules]);
   }
 
   int? _getRuleValue<T extends VineRule>() {

@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/rule_parser.dart';
@@ -12,43 +10,43 @@ final class VineBooleanSchema extends RuleParser implements VineBoolean {
 
   @override
   VineBoolean transform(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineTransformRule(fn));
+    super.rules.add(VineTransformRule(fn));
     return this;
   }
 
   @override
   VineBoolean requiredIfExist(List<String> values) {
-    super.addRule(VineRequiredIfExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfExistRule(values), ...super.rules];
     return this;
   }
 
   @override
   VineBoolean requiredIfAnyExist(List<String> values) {
-    super.addRule(VineRequiredIfAnyExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyExistRule(values), ...rules];
     return this;
   }
 
   @override
   VineBoolean requiredIfMissing(List<String> values) {
-    super.addRule(VineRequiredIfMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineBoolean requiredIfAnyMissing(List<String> values) {
-    super.addRule(VineRequiredIfAnyMissingRule(values), positioned: true);
-    return this;
-  }
-
-  @override
-  VineBoolean nullable() {
-    super.isNullable = true;
+    super.rules = [VineRequiredIfAnyMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineBoolean optional() {
-    super.isOptional = true;
+    super.rules = [VineOptionalRule(), ...rules];
+    return this;
+  }
+
+  @override
+  VineBoolean nullable() {
+    super.rules = [VineNullableRule(), ...rules];
     return this;
   }
 
@@ -60,7 +58,7 @@ final class VineBooleanSchema extends RuleParser implements VineBoolean {
 
   @override
   VineBoolean clone() {
-    return VineBooleanSchema(Queue.of(rules));
+    return VineBooleanSchema([...rules]);
   }
 
   @override

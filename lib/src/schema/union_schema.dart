@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:vine/vine.dart';
 
 final class VineUnionSchema extends RuleParser implements VineUnion {
@@ -10,43 +8,43 @@ final class VineUnionSchema extends RuleParser implements VineUnion {
 
   @override
   VineUnion requiredIfExist(List<String> values) {
-    super.addRule(VineRequiredIfExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfExistRule(values), ...super.rules];
     return this;
   }
 
   @override
   VineUnion requiredIfAnyExist(List<String> values) {
-    super.addRule(VineRequiredIfAnyExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyExistRule(values), ...rules];
     return this;
   }
 
   @override
   VineUnion requiredIfMissing(List<String> values) {
-    super.addRule(VineRequiredIfMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineUnion requiredIfAnyMissing(List<String> values) {
-    super.addRule(VineRequiredIfAnyMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineUnion transform(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineTransformRule(fn));
+    super.rules.add(VineTransformRule(fn));
     return this;
   }
 
   @override
   VineUnion nullable() {
-    super.isNullable = true;
+    super.rules = [VineNullableRule(), ...rules];
     return this;
   }
 
   @override
   VineUnion optional() {
-    super.isOptional = true;
+    super.rules = [VineOptionalRule(), ...rules];
     return this;
   }
 
@@ -58,7 +56,7 @@ final class VineUnionSchema extends RuleParser implements VineUnion {
 
   @override
   VineUnion clone() {
-    return VineUnionSchema(Queue.of(rules), _schemas.toList());
+    return VineUnionSchema([...rules], _schemas.toList());
   }
 
   @override

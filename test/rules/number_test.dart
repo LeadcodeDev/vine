@@ -302,7 +302,7 @@ void main() {
           throwsA(isA<VineValidationException>()));
     });
 
-    test('indepedant test', () {
+    test('validate many times', () {
       final validator = vine.compile(vine.object({
         'toto': vine.number().min(18).optional(),
       }));
@@ -316,6 +316,6 @@ void main() {
           'toto': 17,
         });
       }, throwsA(isA<VineValidationException>()));
-    }, tags: ['test']);
+    });
   });
 }

@@ -20,5 +20,6 @@ void main() {
     iterationCount++;
   }
 
-  print('Flat Object : Processed $iterationCount iterations in ${duration.inSeconds} seconds');
+  print(
+      'Flat Object : Processed $iterationCount iterations in ${duration.inSeconds} seconds');
 }

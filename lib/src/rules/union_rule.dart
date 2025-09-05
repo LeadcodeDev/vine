@@ -1,7 +1,7 @@
 import 'package:vine/src/contracts/rule.dart';
 import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
-import 'package:vine/src/field_pool.dart';
+import 'package:vine/vine.dart';
 
 final class VineUnionRule implements VineRule {
   final List<VineSchema> schemas;
@@ -12,7 +12,7 @@ final class VineUnionRule implements VineRule {
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final List errors = [];
     field.customKeys.add(field.name);
-    final currentField = VineFieldPool.acquire(field.name, field.value);
+    final currentField = VineField(field.name, field.value);
 
     currentField.isUnion = true;
     for (final schema in schemas) {
@@ -23,7 +23,6 @@ final class VineUnionRule implements VineRule {
       }
     }
     currentField.isUnion = false;
-    VineFieldPool.release(currentField);
 
     if (errors.length == schemas.length) {
       final error = ctx.errorReporter.format('union', field, null, {
