@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:vine/src/contracts/rule.dart';
 import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
@@ -32,13 +30,13 @@ final class Vine {
       SimpleErrorReporter.new;
 
   VineObject object(Map<String, VineSchema> payload, {String? message}) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
     rules.add(VineObjectRule(payload, message));
     return VineObjectSchema(payload, rules);
   }
 
   VineGroup group(Function(VineGroupSchema) builder) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
     final group = VineGroupSchema(rules);
 
     builder(group);
@@ -46,56 +44,56 @@ final class Vine {
   }
 
   VineString string({String? message}) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
     rules.add(VineStringRule(message));
 
     return VineStringSchema(rules);
   }
 
   VineNumber number({String? message}) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
     rules.add(VineNumberRule(message));
 
     return VineNumberSchema(rules);
   }
 
   VineBoolean boolean({bool includeLiteral = false, String? message}) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
 
     rules.add(VineBooleanRule(includeLiteral, message));
     return VineBooleanSchema(rules);
   }
 
   VineAny any() {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
 
     rules.add(VineAnyRule());
     return VineAnySchema(rules);
   }
 
   VineEnum enumerate<T extends VineEnumerable>(List<T> source) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
 
     rules.add(VineEnumRule<T>(source));
     return VineEnumSchema<T>(rules, source);
   }
 
   VineArray array(VineSchema schema) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
 
     rules.add(VineArrayRule(schema));
     return VineArraySchema(rules);
   }
 
   VineUnion union(List<VineSchema> schemas) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
     rules.add(VineUnionRule(schemas));
 
     return VineUnionSchema(rules, schemas);
   }
 
   VineDate date({String? message}) {
-    final Queue<VineRule> rules = Queue();
+    final List<VineRule> rules = [];
 
     rules.add(VineDateRule(message));
     return VineDateSchema(rules);
@@ -144,6 +142,7 @@ final class Validator implements VineValidatorContract {
   T validate<T>(dynamic data) {
     final validatorContext = VineValidatorContext(reporter, data);
     final field = VineField('', data);
+
     _schema.parse(validatorContext, field);
 
     if (reporter.hasError) {

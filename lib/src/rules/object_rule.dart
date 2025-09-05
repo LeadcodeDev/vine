@@ -1,7 +1,4 @@
-import 'package:vine/src/contracts/rule.dart';
-import 'package:vine/src/contracts/schema.dart';
-import 'package:vine/src/contracts/vine.dart';
-import 'package:vine/src/field_pool.dart';
+import 'package:vine/vine.dart';
 
 final class VineObjectRule implements VineRule {
   final Map<String, VineSchema> payload;
@@ -28,7 +25,7 @@ final class VineObjectRule implements VineRule {
       final key = entry.key;
       final schema = entry.value;
 
-      final currentField = VineFieldPool.acquire(
+      final currentField = VineField(
           key, fieldValue.containsKey(key) ? field.value[key] : MissingValue())
         ..customKeys.addAll(List.of(field.customKeys, growable: false));
 
@@ -49,7 +46,6 @@ final class VineObjectRule implements VineRule {
       resultMap[key] = currentField.value;
 
       shouldBreak = !currentField.canBeContinue || ctx.errorReporter.hasError;
-      VineFieldPool.release(currentField);
     }
 
     final cleanedMap = {

@@ -14,13 +14,13 @@ ensuring that data complies with an expected format before it is used, which red
 ## 🛠 Key features
 
 | Feature                   | Description                                                  |
-|---------------------------|--------------------------------------------------------------|
-| ✅ Type-Safe Validation    | Define schemas with a fluent API and ensure data integrity   |
+| ------------------------- | ------------------------------------------------------------ |
+| ✅ Type-Safe Validation   | Define schemas with a fluent API and ensure data integrity   |
 | 🧱 Rich Set of Validators | Strings, numbers, booleans, arrays, enums, objects, and more |
 | 🔄 Data Transformation    | Trim, normalize, and transform values during validation      |
 | 🚧 Null Safety            | Full support for nullable and optional fields                |
 | ⚙️ Composable             | Compiled and reusable schemas                                |
-| ⚡ Fast Performance        | ~ 29 000 000 ops/s                                           |
+| ⚡ Fast Performance       | ~ 3 000 000 ops/s                                            |
 | 📦 Extremely small size   | Package size `< 21kb`                                        |
 | 🚀 OpenApi reporter       | Export your schemas as OpenApi spec                          |
 
@@ -86,7 +86,7 @@ void main() {
 
 ### OpenAPI reporter
 
-Vine can generate an OpenAPI schema from your validation schemas. 
+Vine can generate an OpenAPI schema from your validation schemas.
 This feature is useful when you want to document your API
 
 ```dart
@@ -111,4 +111,4 @@ print(reporter);
 
 I would like to thank [Harminder Virk](https://github.com/thetutlage) for all his open-source work on Adonis.js and for
 his permission to
-reuse the name `Vine` for this package. 
+reuse the name `Vine` for this package.

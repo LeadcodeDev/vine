@@ -301,5 +301,21 @@ void main() {
       expect(() => validator.validate({'age': 'not a number'}),
           throwsA(isA<VineValidationException>()));
     });
+
+    test('validate many times', () {
+      final validator = vine.compile(vine.object({
+        'toto': vine.number().min(18).optional(),
+      }));
+
+      final payload = {'toto': 25};
+
+      expect(() => validator.validate(payload), returnsNormally);
+      expect(() {
+        return validator.validate({
+          ...payload,
+          'toto': 17,
+        });
+      }, throwsA(isA<VineValidationException>()));
+    });
   });
 }

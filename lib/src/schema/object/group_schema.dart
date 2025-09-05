@@ -1,5 +1,3 @@
-import 'dart:collection';
-
 import 'package:vine/src/rules/group_object_rule.dart';
 import 'package:vine/vine.dart';
 
@@ -9,19 +7,19 @@ final class VineGroupSchema extends RuleParser implements VineGroup {
   @override
   VineGroup when(bool Function(Map<String, dynamic> data) fn,
       Map<String, VineSchema> object) {
-    super.addRule(VineObjectGroupRule(fn, object));
+    super.rules.add(VineObjectGroupRule(fn, object));
     return this;
   }
 
   @override
   VineGroup otherwise(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineObjectOtherwiseRule(fn));
+    super.rules.add(VineObjectOtherwiseRule(fn));
     return this;
   }
 
   @override
   VineGroup clone() {
-    return VineGroupSchema(Queue.of(rules));
+    return VineGroupSchema([...rules]);
   }
 
   @override

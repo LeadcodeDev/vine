@@ -13,85 +13,85 @@ final class VineNumberSchema extends RuleParser implements VineNumber {
 
   @override
   VineNumber range(List<num> values, {String? message}) {
-    super.addRule(VineRangeRule(values, message));
+    super.rules.add(VineRangeRule(values, message));
     return this;
   }
 
   @override
   VineNumber min(num value, {String? message}) {
-    super.addRule(VineMinRule(value, message));
+    super.rules.add(VineMinRule(value, message));
     return this;
   }
 
   @override
   VineNumber max(num value, {String? message}) {
-    super.addRule(VineMaxRule(value, message));
+    super.rules.add(VineMaxRule(value, message));
     return this;
   }
 
   @override
   VineNumber negative({String? message}) {
-    super.addRule(VineNegativeRule(message));
+    super.rules.add(VineNegativeRule(message));
     return this;
   }
 
   @override
   VineNumber positive({String? message}) {
-    super.addRule(VinePositiveRule(message));
+    super.rules.add(VinePositiveRule(message));
     return this;
   }
 
   @override
   VineNumber double({String? message}) {
-    super.addRule(VineDoubleRule(message));
+    super.rules.add(VineDoubleRule(message));
     return this;
   }
 
   @override
   VineNumber integer({String? message}) {
-    super.addRule(VineIntegerRule(message));
+    super.rules.add(VineIntegerRule(message));
     return this;
   }
 
   @override
   VineNumber requiredIfExist(List<String> values) {
-    super.addRule(VineRequiredIfExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfExistRule(values), ...super.rules];
     return this;
   }
 
   @override
   VineNumber requiredIfAnyExist(List<String> values) {
-    super.addRule(VineRequiredIfAnyExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyExistRule(values), ...rules];
     return this;
   }
 
   @override
   VineNumber requiredIfMissing(List<String> values) {
-    super.addRule(VineRequiredIfMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineNumber requiredIfAnyMissing(List<String> values) {
-    super.addRule(VineRequiredIfAnyMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineNumber transform(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineTransformRule(fn));
+    super.rules.add(VineTransformRule(fn));
     return this;
   }
 
   @override
   VineNumber nullable() {
-    super.isNullable = true;
+    super.rules = [VineNullableRule(), ...rules];
     return this;
   }
 
   @override
   VineNumber optional() {
-    super.isOptional = true;
+    super.rules = [VineOptionalRule(), ...rules];
     return this;
   }
 
@@ -103,7 +103,7 @@ final class VineNumberSchema extends RuleParser implements VineNumber {
 
   @override
   VineNumber clone() {
-    return VineNumberSchema(Queue.of(rules));
+    return VineNumberSchema([...rules]);
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/rule_parser.dart';
 import 'package:vine/src/rules/basic_rule.dart';
+import 'package:vine/vine.dart';
 
 final class VineObjectSchema extends RuleParser implements VineObject {
   final Map<String, VineSchema> _properties;
@@ -21,31 +22,31 @@ final class VineObjectSchema extends RuleParser implements VineObject {
 
   @override
   VineObject transform(Function(VineValidationContext, VineFieldContext) fn) {
-    super.addRule(VineTransformRule(fn));
+    super.rules.add(VineTransformRule(fn));
     return this;
   }
 
   @override
   VineObject requiredIfExist(List<String> values) {
-    super.addRule(VineRequiredIfExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfExistRule(values), ...super.rules];
     return this;
   }
 
   @override
   VineObject requiredIfAnyExist(List<String> values) {
-    super.addRule(VineRequiredIfAnyExistRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyExistRule(values), ...rules];
     return this;
   }
 
   @override
   VineObject requiredIfMissing(List<String> values) {
-    super.addRule(VineRequiredIfMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfMissingRule(values), ...rules];
     return this;
   }
 
   @override
   VineObject requiredIfAnyMissing(List<String> values) {
-    super.addRule(VineRequiredIfAnyMissingRule(values), positioned: true);
+    super.rules = [VineRequiredIfAnyMissingRule(values), ...rules];
     return this;
   }
 
@@ -63,7 +64,12 @@ final class VineObjectSchema extends RuleParser implements VineObject {
 
   @override
   VineObject clone() {
-    return VineObjectSchema({..._properties}, Queue.of(rules));
+    final Map<String, VineSchema> props = {};
+    for (final entry in _properties.entries) {
+      props[entry.key] = entry.value.clone();
+    }
+
+    return VineObjectSchema(props, [...rules]);
   }
 
   @override

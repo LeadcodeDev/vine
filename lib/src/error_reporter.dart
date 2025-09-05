@@ -36,7 +36,11 @@ class SimpleErrorReporter implements VineErrorReporter {
   @override
   void report(String rule, List<String> keys, String message) {
     hasError = true;
-    errors.add({'message': message, 'rule': rule, 'field': keys.join('.')});
+    errors.add({
+      'message': message,
+      'rule': rule,
+      if (keys.isNotEmpty) 'field': keys.join('.')
+    });
   }
 
   @override
