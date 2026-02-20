@@ -7,6 +7,8 @@ import 'package:vine/src/helper.dart';
 final europeanPhoneRegex =
     RegExp(r'^\+?[0-9]{1,4}[-.\s]?[0-9]{1,4}[-.\s]?[0-9]{4,10}$');
 
+final _wordSeparatorRegex = RegExp(r'[_\s-]');
+
 final class VineStringRule implements VineRule {
   final String? message;
 
@@ -15,10 +17,6 @@ final class VineStringRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value is! String) {
-      if (field.isUnion) {
-        throw Exception('Union type is not supported for string type');
-      }
-
       final error = ctx.errorReporter.format('string', field, message, {});
       ctx.errorReporter
           .report('string', [...field.customKeys, field.name], error);
@@ -328,7 +326,7 @@ final class VineToCamelCaseRule implements VineRule {
   void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case String value) {
       final buffer = StringBuffer();
-      final parts = value.split(RegExp(r'[_\s-]'));
+      final parts = value.split(_wordSeparatorRegex);
 
       buffer.write(parts.first.toLowerCase());
 
@@ -346,7 +344,7 @@ final class VineToKebabCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     buffer.write(parts.first.toLowerCase());
 
@@ -363,7 +361,7 @@ final class VineToSnakeCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     buffer.write(parts.first.toLowerCase());
 
@@ -380,7 +378,7 @@ final class VineToPascalCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     for (final part in parts) {
       buffer.write(part[0].toUpperCase());
@@ -395,7 +393,7 @@ final class VineToTitleCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     for (final part in parts) {
       buffer.write(part[0].toUpperCase());
@@ -411,7 +409,7 @@ final class VineToSentenceCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     buffer.write(parts.first[0].toUpperCase());
     buffer.write(parts.first.substring(1).toLowerCase());
@@ -429,7 +427,7 @@ final class VineToCapitalCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     for (final part in parts) {
       buffer.write(part[0].toUpperCase());
@@ -445,7 +443,7 @@ final class VineToConstantCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     buffer.write(parts.first.toUpperCase());
 
@@ -462,7 +460,7 @@ final class VineToDotCaseRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     final buffer = StringBuffer();
-    final parts = (field.value as String).split(RegExp(r'\[_\s-'));
+    final parts = (field.value as String).split(_wordSeparatorRegex);
 
     buffer.write(parts.first.toLowerCase());
 

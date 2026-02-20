@@ -48,11 +48,6 @@ final class VineObjectRule implements VineRule {
       shouldBreak = !currentField.canBeContinue || ctx.errorReporter.hasError;
     }
 
-    final cleanedMap = {
-      for (final key in fieldValue.keys)
-        if (payload.containsKey(key)) key: resultMap[key] ?? fieldValue[key]
-    };
-
-    field.mutate(cleanedMap);
+    field.mutate(resultMap);
   }
 }

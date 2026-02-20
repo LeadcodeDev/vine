@@ -11,14 +11,15 @@ final class VineArrayRule implements VineRule {
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case List values) {
+      final List result = List.filled(values.length, null);
       for (int i = 0; i < values.length; i++) {
         final currentField = VineField(field.name, values[i])
           ..customKeys = [...field.customKeys, i.toString()];
 
         schema.parse(ctx, currentField);
-        currentField.mutate([...field.value, currentField.value]);
+        result[i] = currentField.value;
       }
-
+      field.mutate(result);
       return;
     }
 

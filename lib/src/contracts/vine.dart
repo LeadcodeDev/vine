@@ -13,6 +13,8 @@ abstract interface class VineErrorReporter {
   Exception createError(Map<String, dynamic> message);
 
   void clear();
+
+  void rollbackTo(int errorCount);
 }
 
 abstract interface class VineValidatorContract {}
@@ -39,4 +41,8 @@ abstract interface class VineFieldContext {
 
 typedef ParseHandler = void Function(VineValidationContext, VineFieldContext);
 
-final class MissingValue {}
+final class MissingValue {
+  static final _instance = MissingValue._();
+  const MissingValue._();
+  factory MissingValue() => _instance;
+}

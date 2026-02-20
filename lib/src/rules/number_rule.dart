@@ -3,10 +3,6 @@ import 'package:vine/src/contracts/vine.dart';
 
 void handleNumberConversionError(
     VineValidationContext ctx, VineFieldContext field, String? message) {
-  if (field.isUnion) {
-    throw Exception('Union type is not supported for number type');
-  }
-
   final error = ctx.errorReporter.format('number', field, message, {});
   ctx.errorReporter.report('number', [...field.customKeys, field.name], error);
 }
