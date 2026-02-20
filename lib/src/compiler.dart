@@ -159,6 +159,21 @@ class SchemaCompiler {
             }
           }
 
+          // Check if all children are pure (no mutations)
+          bool childrenArePure = true;
+          for (final s in schemas) {
+            final rules = _getRulesFromLeafSchema(s);
+            if (!rules.every(_isNonMutatingRule)) {
+              childrenArePure = false;
+              break;
+            }
+          }
+
+          if (childrenArePure) {
+            return _compileMonomorphicFlatPure(keys, compiledChildren, length,
+                objectMsg, !anyChildNullSensitive);
+          }
+
           return _compileMonomorphicFlat(keys, compiledChildren, length,
               objectMsg, !anyChildNullSensitive);
         }
@@ -300,6 +315,108 @@ class SchemaCompiler {
       VineEnumSchema() => s.rules,
       VineAnySchema() => s.rules,
       _ => const <VineRule>[],
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helper: check if a rule never mutates field.value
+  // ---------------------------------------------------------------------------
+  static bool _isNonMutatingRule(VineRule r) {
+    return r is VineStringRule ||
+        r is VineMinLengthRule ||
+        r is VineMaxLengthRule ||
+        r is VineFixedLengthRule ||
+        r is VineEmailRule ||
+        r is VinePhoneRule ||
+        r is VineIpAddressRule ||
+        r is VineRegexRule ||
+        r is VineHexColorRule ||
+        r is VineUrlRule ||
+        r is VineAlphaRule ||
+        r is VineAlphaNumericRule ||
+        r is VineStartWithRule ||
+        r is VineEndWithRule ||
+        r is VineUuidRule ||
+        r is VineCreditCardRule ||
+        r is VineSameAsRule ||
+        r is VineNotSameAsRule ||
+        r is VineInListRule ||
+        r is VineNotInListRule ||
+        r is VineMinRule ||
+        r is VineMaxRule ||
+        r is VineRangeRule ||
+        r is VineNegativeRule ||
+        r is VinePositiveRule ||
+        r is VineDoubleRule ||
+        r is VineIntegerRule ||
+        r is VineAnyRule;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Monomorphic flat object compilation — zero-copy (pure children)
+  // When no child rule mutates values, return the input map directly.
+  // ---------------------------------------------------------------------------
+  static CompiledValidatorFn _compileMonomorphicFlatPure(
+    List<String> keys,
+    List<CompiledValidatorFn> compiledChildren,
+    int length,
+    String objectMsg,
+    bool canUseFastNull,
+  ) {
+    final currentField = VineField('', null);
+
+    if (canUseFastNull) {
+      return (VineValidationContext ctx, VineFieldContext field) {
+        final fv = field.value;
+        if (fv is! Map) {
+          ctx.errorReporter.reportField('object', field, objectMsg);
+          return;
+        }
+
+        for (int i = 0; i < length; i++) {
+          final key = keys[i];
+          currentField.name = key;
+          currentField.value = fv[key] ?? _missingValue;
+          currentField.canBeContinue = true;
+
+          compiledChildren[i](ctx, currentField);
+
+          if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+            field.mutate(fv);
+            return;
+          }
+        }
+
+        // Zero-copy: return input map directly (no child mutated any value)
+        field.mutate(fv);
+      };
+    }
+
+    // Safe null path (nullable/optional children)
+    return (VineValidationContext ctx, VineFieldContext field) {
+      final fv = field.value;
+      if (fv is! Map) {
+        ctx.errorReporter.reportField('object', field, objectMsg);
+        return;
+      }
+
+      for (int i = 0; i < length; i++) {
+        final key = keys[i];
+        final raw = fv[key];
+        currentField.name = key;
+        currentField.value =
+            (raw == null && !fv.containsKey(key)) ? _missingValue : raw;
+        currentField.canBeContinue = true;
+
+        compiledChildren[i](ctx, currentField);
+
+        if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+          field.mutate(fv);
+          return;
+        }
+      }
+
+      field.mutate(fv);
     };
   }
 
