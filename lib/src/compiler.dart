@@ -131,15 +131,7 @@ class SchemaCompiler {
         // Check if any child rule needs field context (sameAs, notSameAs, confirmed, etc.)
         bool needsCustomKeys = false;
         for (final s in schemas) {
-          final rules = switch (s) {
-            VineStringSchema() => s.rules,
-            VineNumberSchema() => s.rules,
-            VineBooleanSchema() => s.rules,
-            VineDateSchema() => s.rules,
-            VineEnumSchema() => s.rules,
-            VineAnySchema() => s.rules,
-            _ => const <VineRule>[],
-          };
+          final rules = _getRulesFromLeafSchema(s);
           for (final r in rules) {
             if (r is VineSameAsRule ||
                 r is VineNotSameAsRule ||
@@ -156,33 +148,19 @@ class SchemaCompiler {
         }
 
         if (!needsCustomKeys) {
-          // Ultra-fast path: no customKeys manipulation needed
-          return (VineValidationContext ctx, VineFieldContext field) {
-            final fieldValue = field.value;
-            if (fieldValue is! Map) {
-              ctx.errorReporter.reportField('object', field, objectMsg);
-              return;
+          // Check if any child has nullable/optional (need safe null handling)
+          bool anyChildNullSensitive = false;
+          for (final s in schemas) {
+            final rules = _getRulesFromLeafSchema(s);
+            if (rules
+                .any((r) => r is VineNullableRule || r is VineOptionalRule)) {
+              anyChildNullSensitive = true;
+              break;
             }
+          }
 
-            final resultMap = Map<String, dynamic>.of(templateMap);
-
-            for (int i = 0; i < length; i++) {
-              final key = keys[i];
-              currentField.name = key;
-              currentField.value =
-                  fieldValue.containsKey(key) ? fieldValue[key] : _missingValue;
-              currentField.canBeContinue = true;
-
-              compiledChildren[i](ctx, currentField);
-              resultMap[key] = currentField.value;
-
-              if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
-                break;
-              }
-            }
-
-            field.mutate(resultMap);
-          };
+          return _compileMonomorphicFlat(keys, compiledChildren, length,
+              objectMsg, !anyChildNullSensitive);
         }
       }
 
@@ -309,6 +287,96 @@ class SchemaCompiler {
   }
 
   static final _missingValue = MissingValue();
+
+  // ---------------------------------------------------------------------------
+  // Helper: get rules from a leaf schema
+  // ---------------------------------------------------------------------------
+  static List<VineRule> _getRulesFromLeafSchema(VineSchema s) {
+    return switch (s) {
+      VineStringSchema() => s.rules,
+      VineNumberSchema() => s.rules,
+      VineBooleanSchema() => s.rules,
+      VineDateSchema() => s.rules,
+      VineEnumSchema() => s.rules,
+      VineAnySchema() => s.rules,
+      _ => const <VineRule>[],
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Monomorphic flat object compilation
+  // Per-child VineField, single lookup, deferred map construction
+  // ---------------------------------------------------------------------------
+  static CompiledValidatorFn _compileMonomorphicFlat(
+    List<String> keys,
+    List<CompiledValidatorFn> compiledChildren,
+    int length,
+    String objectMsg,
+    bool canUseFastNull,
+  ) {
+    // Shared VineField (reused across calls, better cache locality)
+    final currentField = VineField('', null);
+    // Pre-allocate template map for fast cloning
+    final templateMap = <String, dynamic>{for (final k in keys) k: null};
+
+    if (canUseFastNull) {
+      // Fast null path: single lookup with ?? _missingValue
+      return (VineValidationContext ctx, VineFieldContext field) {
+        final fv = field.value;
+        if (fv is! Map) {
+          ctx.errorReporter.reportField('object', field, objectMsg);
+          return;
+        }
+
+        final resultMap = Map<String, dynamic>.of(templateMap);
+
+        for (int i = 0; i < length; i++) {
+          final key = keys[i];
+          currentField.name = key;
+          currentField.value = fv[key] ?? _missingValue;
+          currentField.canBeContinue = true;
+
+          compiledChildren[i](ctx, currentField);
+          resultMap[key] = currentField.value;
+
+          if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+            break;
+          }
+        }
+
+        field.mutate(resultMap);
+      };
+    }
+
+    // Safe null path: distinguish null values from missing keys
+    return (VineValidationContext ctx, VineFieldContext field) {
+      final fv = field.value;
+      if (fv is! Map) {
+        ctx.errorReporter.reportField('object', field, objectMsg);
+        return;
+      }
+
+      final resultMap = Map<String, dynamic>.of(templateMap);
+
+      for (int i = 0; i < length; i++) {
+        final key = keys[i];
+        final raw = fv[key];
+        currentField.name = key;
+        currentField.value =
+            (raw == null && !fv.containsKey(key)) ? _missingValue : raw;
+        currentField.canBeContinue = true;
+
+        compiledChildren[i](ctx, currentField);
+        resultMap[key] = currentField.value;
+
+        if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+          break;
+        }
+      }
+
+      field.mutate(resultMap);
+    };
+  }
 
   // ---------------------------------------------------------------------------
   // Array compilation
