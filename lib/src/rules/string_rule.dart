@@ -19,7 +19,7 @@ final class VineStringRule implements VineRule {
     if (field.value is! String) {
       final error = ctx.errorReporter.format('string', field, message, {});
       ctx.errorReporter
-          .report('string', [...field.customKeys, field.name], error);
+          .reportField('string', field, error);
     }
   }
 }
@@ -38,7 +38,7 @@ final class VineMinLengthRule implements VineRule {
       });
 
       ctx.errorReporter
-          .report('minLength', [...field.customKeys, field.name], error);
+          .reportField('minLength', field, error);
     }
   }
 }
@@ -57,7 +57,7 @@ final class VineMaxLengthRule implements VineRule {
       });
 
       ctx.errorReporter
-          .report('maxLength', [...field.customKeys, field.name], error);
+          .reportField('maxLength', field, error);
     }
   }
 }
@@ -76,7 +76,7 @@ final class VineFixedLengthRule implements VineRule {
       });
 
       ctx.errorReporter
-          .report('fixedLength', [...field.customKeys, field.name], error);
+          .reportField('fixedLength', field, error);
     }
   }
 }
@@ -91,7 +91,7 @@ final class VineEmailRule implements VineRule {
     if (field.value case String value when !isEmailSimd(value)) {
       final error = ctx.errorReporter.format('email', field, message, {});
       ctx.errorReporter
-          .report('email', [...field.customKeys, field.name], error);
+          .reportField('email', field, error);
     }
   }
 }
@@ -108,7 +108,7 @@ final class VinePhoneRule implements VineRule {
     if (field.value case String value when !currentRegexp.hasMatch(value)) {
       final error = ctx.errorReporter.format('phone', field, message, {});
       ctx.errorReporter
-          .report('phone', [...field.customKeys, field.name], error);
+          .reportField('phone', field, error);
     }
   }
 }
@@ -125,7 +125,7 @@ final class VineIpAddressRule implements VineRule {
       final error = ctx.errorReporter.format('ipAddress', field, message,
           {'version': version ?? IpAddressVersion.values.toList()});
       ctx.errorReporter
-          .report('ipAddress', [...field.customKeys, field.name], error);
+          .reportField('ipAddress', field, error);
     }
   }
 }
@@ -144,7 +144,7 @@ final class VineRegexRule implements VineRule {
       });
 
       ctx.errorReporter
-          .report('regex', [...field.customKeys, field.name], error);
+          .reportField('regex', field, error);
     }
   }
 }
@@ -159,7 +159,7 @@ final class VineHexColorRule implements VineRule {
     if (field.value case String value when !value.isHexColor) {
       final error = ctx.errorReporter.format('hexColor', field, message, {});
       ctx.errorReporter
-          .report('hexColor', [...field.customKeys, field.name], error);
+          .reportField('hexColor', field, error);
     }
   }
 }
@@ -184,7 +184,7 @@ final class VineUrlRule implements VineRule {
           'allowUnderscores': allowUnderscores,
         })) {
       final error = ctx.errorReporter.format('url', field, message, {});
-      ctx.errorReporter.report('url', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('url', field, error);
     }
   }
 }
@@ -199,7 +199,7 @@ final class VineAlphaRule implements VineRule {
     if (field.value case String value when !value.isAlpha) {
       final error = ctx.errorReporter.format('alpha', field, message, {});
       ctx.errorReporter
-          .report('alpha', [...field.customKeys, field.name], error);
+          .reportField('alpha', field, error);
     }
   }
 }
@@ -215,7 +215,7 @@ final class VineAlphaNumericRule implements VineRule {
       final error =
           ctx.errorReporter.format('alphaNumeric', field, message, {});
       ctx.errorReporter
-          .report('alphaNumeric', [...field.customKeys, field.name], error);
+          .reportField('alphaNumeric', field, error);
     }
   }
 }
@@ -232,7 +232,7 @@ final class VineStartWithRule implements VineRule {
       final error = ctx.errorReporter
           .format('startWith', field, message, {'value': attemptedValue});
       ctx.errorReporter
-          .report('startWith', [...field.customKeys, field.name], error);
+          .reportField('startWith', field, error);
     }
   }
 }
@@ -249,7 +249,7 @@ final class VineEndWithRule implements VineRule {
       final error = ctx.errorReporter
           .format('endWith', field, message, {'value': attemptedValue});
       ctx.errorReporter
-          .report('endWith', [...field.customKeys, field.name], error);
+          .reportField('endWith', field, error);
     }
   }
 }
@@ -270,7 +270,7 @@ final class VineConfirmedRule implements VineRule {
       final error = ctx.errorReporter
           .format('missingProperty', field, message, {'field': confirmedKey});
       ctx.errorReporter
-          .report('missingProperty', [...field.customKeys, field.name], error);
+          .reportField('missingProperty', field, error);
     }
 
     final currentValue = ctx.data[confirmedKey];
@@ -278,7 +278,7 @@ final class VineConfirmedRule implements VineRule {
       final error = ctx.errorReporter
           .format('confirmed', field, message, {'attemptedName': confirmedKey});
       ctx.errorReporter
-          .report('confirmed', [...field.customKeys, field.name], error);
+          .reportField('confirmed', field, error);
     }
 
     if (!include) {
@@ -487,7 +487,7 @@ final class VineUuidRule implements VineRule {
       });
 
       ctx.errorReporter
-          .report('uuid', [...field.customKeys, field.name], error);
+          .reportField('uuid', field, error);
     }
   }
 }
@@ -502,7 +502,7 @@ final class VineCreditCardRule implements VineRule {
     if (field.value case String value when !value.isCreditCard) {
       final error = ctx.errorReporter.format('creditCard', field, message, {});
       ctx.errorReporter
-          .report('creditCard', [...field.customKeys, field.name], error);
+          .reportField('creditCard', field, error);
     }
   }
 }
@@ -521,7 +521,7 @@ final class VineSameAsRule implements VineRule {
       final error =
           ctx.errorReporter.format('sameAs', field, message, {'field': value});
       ctx.errorReporter
-          .report('sameAs', [...field.customKeys, field.name], error);
+          .reportField('sameAs', field, error);
     }
   }
 }
@@ -540,7 +540,7 @@ final class VineNotSameAsRule implements VineRule {
       final error = ctx.errorReporter
           .format('notSameAs', field, message, {'field': value});
       ctx.errorReporter
-          .report('notSameAs', [...field.customKeys, field.name], error);
+          .reportField('notSameAs', field, error);
     }
   }
 }
@@ -557,7 +557,7 @@ final class VineInListRule implements VineRule {
       final error = ctx.errorReporter
           .format('inList', field, message, {'values': values});
       ctx.errorReporter
-          .report('inList', [...field.customKeys, field.name], error);
+          .reportField('inList', field, error);
     }
   }
 }
@@ -574,7 +574,7 @@ final class VineNotInListRule implements VineRule {
       final error = ctx.errorReporter
           .format('notInList', field, message, {'values': values});
       ctx.errorReporter
-          .report('notInList', [...field.customKeys, field.name], error);
+          .reportField('notInList', field, error);
     }
   }
 }

@@ -27,17 +27,12 @@ class SimpleErrorReporter implements VineErrorReporter {
     final String template =
         message ?? _errorMessages[field.name] ?? mappedErrors[rule]!;
 
-    final allOptions = {
-      ...options,
-      'name': field.name,
-      'value': field.value,
-    };
-
     return template.replaceAllMapped(_placeholderRegex, (match) {
       final key = match.group(1)!;
-      return allOptions.containsKey(key)
-          ? allOptions[key].toString()
-          : match.group(0)!;
+      if (options.containsKey(key)) return options[key].toString();
+      if (key == 'name') return field.name;
+      if (key == 'value') return field.value.toString();
+      return match.group(0)!;
     });
   }
 
@@ -50,6 +45,33 @@ class SimpleErrorReporter implements VineErrorReporter {
       'message': message,
       'rule': rule,
       if (fieldPath != null) 'field': fieldPath,
+    });
+  }
+
+  @override
+  void reportField(String rule, VineFieldContext field, String message) {
+    hasError = true;
+    final keys = field.customKeys;
+    final name = field.name;
+
+    String fieldPath;
+    if (keys.isEmpty) {
+      fieldPath = name;
+    } else {
+      final buffer = StringBuffer();
+      for (int i = 0; i < keys.length; i++) {
+        buffer.write(keys[i]);
+        buffer.write('.');
+      }
+      buffer.write(name);
+      fieldPath = buffer.toString();
+    }
+
+    _errorFieldNames.add(fieldPath);
+    errors.add({
+      'message': message,
+      'rule': rule,
+      'field': fieldPath,
     });
   }
 

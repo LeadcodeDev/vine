@@ -21,7 +21,7 @@ final class VineEnumRule<T> implements VineRule {
       });
 
       ctx.errorReporter
-          .report('enum', [...field.customKeys, field.name], error);
+          .reportField('enum', field, error);
     }
   }
 }

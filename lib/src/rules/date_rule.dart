@@ -10,8 +10,7 @@ final class VineDateRule implements VineRule {
     if (field.value is MissingValue) {
       final error =
           ctx.errorReporter.format('date.required', field, message, {});
-      ctx.errorReporter
-          .report('date.required', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.required', field, error);
       return;
     }
 
@@ -23,7 +22,7 @@ final class VineDateRule implements VineRule {
     }
 
     final error = ctx.errorReporter.format('date', field, message, {});
-    ctx.errorReporter.report('date', [...field.customKeys, field.name], error);
+    ctx.errorReporter.reportField('date', field, error);
   }
 }
 
@@ -40,8 +39,7 @@ final class VineDateBeforeRule implements VineRule {
         'date': date,
       });
 
-      ctx.errorReporter
-          .report('date.before', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.before', field, error);
     }
   }
 }
@@ -59,8 +57,7 @@ final class VineDateAfterRule implements VineRule {
         'date': date,
       });
 
-      ctx.errorReporter
-          .report('date.after', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.after', field, error);
     }
   }
 }
@@ -81,8 +78,7 @@ final class VineDateBetweenRule implements VineRule {
         'end': end,
       });
 
-      ctx.errorReporter
-          .report('date.between', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.between', field, error);
     }
   }
 }
@@ -109,8 +105,7 @@ final class VineDateBeforeFieldRule implements VineRule {
         'field': targetField,
       });
 
-      ctx.errorReporter
-          .report('date.beforeField', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.beforeField', field, error);
     }
   }
 }
@@ -137,8 +132,7 @@ final class VineDateAfterFieldRule implements VineRule {
         'field': targetField,
       });
 
-      ctx.errorReporter
-          .report('date.afterField', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.afterField', field, error);
     }
   }
 }
@@ -168,16 +162,14 @@ final class VineDateBetweenFieldRule implements VineRule {
     if (startFieldDate == null) {
       final error = ctx.errorReporter
           .format('date.required', field, message, {'field': startField});
-      ctx.errorReporter
-          .report('date.required', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.required', field, error);
       return;
     }
 
     if (endFieldDate == null) {
       final error = ctx.errorReporter
           .format('date.required', field, message, {'field': endField});
-      ctx.errorReporter
-          .report('date.required', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.required', field, error);
       return;
     }
 
@@ -188,8 +180,7 @@ final class VineDateBetweenFieldRule implements VineRule {
         'end': endField,
       });
 
-      ctx.errorReporter.report(
-          'date.betweenFields', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('date.betweenFields', field, error);
     }
   }
 }

@@ -26,7 +26,7 @@ final class VineBooleanRule implements VineRule {
     if (content == null) {
       final error = ctx.errorReporter.format('boolean', field, message, {});
       ctx.errorReporter
-          .report('boolean', [...field.customKeys, field.name], error);
+          .reportField('boolean', field, error);
     } else {
       field.mutate(content);
     }

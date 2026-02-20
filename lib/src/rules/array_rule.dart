@@ -3,6 +3,12 @@ import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
 import 'package:vine/src/field.dart';
 
+const _maxCachedIndex = 256;
+final _indexStrings = List.generate(_maxCachedIndex, (i) => i.toString());
+
+String _indexToString(int i) =>
+    i < _maxCachedIndex ? _indexStrings[i] : i.toString();
+
 final class VineArrayRule implements VineRule {
   final VineSchema schema;
 
@@ -13,8 +19,9 @@ final class VineArrayRule implements VineRule {
     if (field.value case List values) {
       final List result = List.filled(values.length, null);
       for (int i = 0; i < values.length; i++) {
-        final currentField = VineField(field.name, values[i])
-          ..customKeys = [...field.customKeys, i.toString()];
+        final currentField = VineField(field.name, values[i]);
+        currentField.customKeys.addAll(field.customKeys);
+        currentField.customKeys.add(_indexToString(i));
 
         schema.parse(ctx, currentField);
         result[i] = currentField.value;
@@ -24,7 +31,7 @@ final class VineArrayRule implements VineRule {
     }
 
     final error = ctx.errorReporter.format('array', field, null, {});
-    ctx.errorReporter.report('array', [...field.customKeys, field.name], error);
+    ctx.errorReporter.reportField('array', field, error);
   }
 }
 
@@ -38,8 +45,7 @@ final class VineArrayUniqueRule implements VineRule {
     if (field.value is! List) {
       final error =
           ctx.errorReporter.format('array.unique', field, message, {});
-      ctx.errorReporter
-          .report('array.unique', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('array.unique', field, error);
       return;
     }
 
@@ -49,8 +55,7 @@ final class VineArrayUniqueRule implements VineRule {
     if (values.length != unique.length) {
       final error =
           ctx.errorReporter.format('array.unique', field, message, {});
-      ctx.errorReporter
-          .report('array.unique', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('array.unique', field, error);
     }
   }
 }
@@ -69,8 +74,7 @@ final class VineArrayMinLengthRule implements VineRule {
         'min': minValue,
       });
 
-      ctx.errorReporter
-          .report('array.minLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('array.minLength', field, error);
     }
   }
 }
@@ -89,8 +93,7 @@ final class VineArrayMaxLengthRule implements VineRule {
         'max': maxValue,
       });
 
-      ctx.errorReporter
-          .report('array.maxLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('array.maxLength', field, error);
     }
   }
 }
@@ -108,8 +111,7 @@ final class VineArrayFixedLengthRule implements VineRule {
           ctx.errorReporter.format('array.fixedLength', field, message, {
         'length': count,
       });
-      ctx.errorReporter.report(
-          'array.fixedLength', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('array.fixedLength', field, error);
     }
   }
 }
