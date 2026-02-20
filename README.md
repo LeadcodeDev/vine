@@ -20,7 +20,7 @@ ensuring that data complies with an expected format before it is used, which red
 | 🔄 Data Transformation    | Trim, normalize, and transform values during validation      |
 | 🚧 Null Safety            | Full support for nullable and optional fields                |
 | ⚙️ Composable             | Compiled and reusable schemas                                |
-| ⚡ Fast Performance       | ~ 3 000 000 ops/s                                            |
+| ⚡ Fast Performance       | ~ 5 800 000 ops/s                                            |
 | 📦 Extremely small size   | Package size `< 21kb`                                        |
 | 🚀 OpenApi reporter       | Export your schemas as OpenApi spec                          |
 
@@ -106,6 +106,19 @@ final schema = vine.object({
 final reporter = vine.openApi.report(schemas: {'MySchema': schema});
 print(reporter);
 ```
+
+## ⚡ Benchmark
+
+Performance measured on compiled validators, single-threaded, Dart VM.
+
+| Benchmark                    | Throughput          |
+| ---------------------------- | ------------------- |
+| Flat Object                  | **5 774 789 ops/s** |
+| Array Object                 | **4 285 550 ops/s** |
+| Nested Object                | **2 411 681 ops/s** |
+| Large Array (10 000 objects) | **14 ms**           |
+
+> Benchmarks are available in the `benchmark/` directory. Run them with `dart run benchmark/<name>.dart`.
 
 ## ❤️ Credit
 
