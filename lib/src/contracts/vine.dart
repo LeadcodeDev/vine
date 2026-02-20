@@ -3,6 +3,8 @@ abstract interface class VineErrorReporter {
 
   abstract bool hasError;
 
+  int get errorCount;
+
   bool hasErrorForField(String fieldName);
 
   String format(String rule, VineFieldContext field, String? message,

@@ -18,11 +18,16 @@ final class VineArrayRule implements VineRule {
   void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case List values) {
       final List result = List.filled(values.length, null);
-      final currentField =
-          VineField(field.name, values.isEmpty ? null : values[0]);
+      final currentField = VineField(field.name, null);
+      currentField.customKeys.addAll(field.customKeys);
+      final baseLength = currentField.customKeys.length;
+
       for (int i = 0; i < values.length; i++) {
-        currentField.reset(field.name, values[i]);
-        currentField.customKeys.addAll(field.customKeys);
+        currentField.name = field.name;
+        currentField.value = values[i];
+        currentField.canBeContinue = true;
+        currentField.isUnion = false;
+        currentField.customKeys.length = baseLength;
         currentField.customKeys.add(_indexToString(i));
 
         schema.parse(ctx, currentField);

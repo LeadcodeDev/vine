@@ -58,7 +58,10 @@ final class VineAnySchema extends RuleParser implements VineAny {
 
   @override
   VineAny clone() {
-    return VineAnySchema([...rules]);
+    final cloned = VineAnySchema([...rules]);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

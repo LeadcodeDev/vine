@@ -78,7 +78,17 @@ final class VineArraySchema extends RuleParser implements VineArray {
 
   @override
   VineArray clone() {
-    return VineArraySchema([...rules]);
+    final clonedRules = rules.map((rule) {
+      if (rule is VineArrayRule) {
+        return VineArrayRule(rule.schema.clone());
+      }
+      return rule;
+    }).toList();
+
+    final cloned = VineArraySchema(clonedRules);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   int? _getRuleValue<T extends VineRule>() {

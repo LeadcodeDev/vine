@@ -125,6 +125,8 @@ final class Validator implements VineValidatorContract {
   final VineSchema _schema;
   final Map<String, String> errors;
   final reporter = vine.errorReporter({});
+  late final _validatorContext = VineValidatorContext(reporter, null);
+  final _rootField = VineField('', null);
 
   Validator(this._schema, this.errors);
 
@@ -140,17 +142,17 @@ final class Validator implements VineValidatorContract {
   }
 
   T validate<T>(dynamic data) {
-    final validatorContext = VineValidatorContext(reporter, data);
-    final field = VineField('', data);
+    _validatorContext.data = data;
+    _rootField.reset('', data);
 
-    _schema.parse(validatorContext, field);
+    _schema.parse(_validatorContext, _rootField);
 
     if (reporter.hasError) {
       throw reporter.createError({'errors': reporter.errors});
     }
 
     reporter.clear();
-    return field.value;
+    return _rootField.value;
   }
 }
 

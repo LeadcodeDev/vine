@@ -6,7 +6,7 @@ final class VineValidatorContext<T extends VineErrorReporter>
   final T errorReporter;
 
   @override
-  final dynamic data;
+  dynamic data;
 
   @override
   Map<String, dynamic> getFieldContext(List<String> keys) {

@@ -18,6 +18,9 @@ class SimpleErrorReporter implements VineErrorReporter {
   bool hasError = false;
 
   @override
+  int errorCount = 0;
+
+  @override
   bool hasErrorForField(String fieldName) =>
       _errorFieldNames.contains(fieldName);
 
@@ -26,6 +29,8 @@ class SimpleErrorReporter implements VineErrorReporter {
       Map<String, dynamic> options) {
     final String template =
         message ?? _errorMessages[field.name] ?? mappedErrors[rule]!;
+
+    if (!template.contains('{')) return template;
 
     return template.replaceAllMapped(_placeholderRegex, (match) {
       final key = match.group(1)!;
@@ -39,6 +44,7 @@ class SimpleErrorReporter implements VineErrorReporter {
   @override
   void report(String rule, List<String> keys, String message) {
     hasError = true;
+    errorCount++;
     final fieldPath = keys.isNotEmpty ? keys.join('.') : null;
     if (fieldPath != null) _errorFieldNames.add(fieldPath);
     errors.add({
@@ -51,6 +57,7 @@ class SimpleErrorReporter implements VineErrorReporter {
   @override
   void reportField(String rule, VineFieldContext field, String message) {
     hasError = true;
+    errorCount++;
     final keys = field.customKeys;
     final name = field.name;
 
@@ -81,14 +88,15 @@ class SimpleErrorReporter implements VineErrorReporter {
   }
 
   @override
-  void rollbackTo(int errorCount) {
-    while (errors.length > errorCount) {
+  void rollbackTo(int targetCount) {
+    while (errors.length > targetCount) {
       final removed = errors.removeLast();
       final field = removed['field'];
       if (field is String) {
         _errorFieldNames.remove(field);
       }
     }
+    errorCount = errors.length;
     if (errors.isEmpty) {
       hasError = false;
     }
@@ -100,6 +108,7 @@ class SimpleErrorReporter implements VineErrorReporter {
       errors.clear();
       _errorFieldNames.clear();
       hasError = false;
+      errorCount = 0;
     }
   }
 }

@@ -56,7 +56,18 @@ final class VineUnionSchema extends RuleParser implements VineUnion {
 
   @override
   VineUnion clone() {
-    return VineUnionSchema([...rules], _schemas.toList());
+    final clonedSchemas = _schemas.map((s) => s.clone()).toList();
+    final clonedRules = rules.map((rule) {
+      if (rule is VineUnionRule) {
+        return VineUnionRule(clonedSchemas);
+      }
+      return rule;
+    }).toList();
+
+    final cloned = VineUnionSchema(clonedRules, clonedSchemas);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

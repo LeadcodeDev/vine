@@ -103,7 +103,10 @@ final class VineNumberSchema extends RuleParser implements VineNumber {
 
   @override
   VineNumber clone() {
-    return VineNumberSchema([...rules]);
+    final cloned = VineNumberSchema([...rules]);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

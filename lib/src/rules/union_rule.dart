@@ -17,10 +17,10 @@ final class VineUnionRule implements VineRule {
     int failCount = 0;
 
     for (final schema in schemas) {
-      final errorsBeforeAttempt = ctx.errorReporter.errors.length;
+      final errorsBeforeAttempt = ctx.errorReporter.errorCount;
       schema.parse(ctx, currentField);
 
-      if (ctx.errorReporter.errors.length > errorsBeforeAttempt) {
+      if (ctx.errorReporter.errorCount > errorsBeforeAttempt) {
         ctx.errorReporter.rollbackTo(errorsBeforeAttempt);
         failCount++;
       } else {
