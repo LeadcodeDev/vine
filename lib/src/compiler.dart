@@ -659,6 +659,11 @@ class SchemaCompiler {
 
     final arrayErrorMsg = mappedErrors['array']!;
 
+    // Check if element schema is recursively pure (no mutations)
+    if (_isRecursivelyPure(arrayRule.schema)) {
+      return _compileArrayPure(compiledElement, additionalRules, arrayErrorMsg);
+    }
+
     // Pre-allocate reusable VineField
     final currentField = VineField('', null);
 
@@ -690,6 +695,47 @@ class SchemaCompiler {
           result[i] = currentField.value;
         }
         field.mutate(result);
+        return;
+      }
+
+      ctx.errorReporter.reportField('array', field, arrayErrorMsg);
+    };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Array compilation — zero-copy (pure elements)
+  // ---------------------------------------------------------------------------
+  static CompiledValidatorFn _compileArrayPure(
+    CompiledValidatorFn compiledElement,
+    List<CompiledValidatorFn> additionalRules,
+    String arrayErrorMsg,
+  ) {
+    final currentField = VineField('', null);
+
+    return (VineValidationContext ctx, VineFieldContext field) {
+      for (int a = 0; a < additionalRules.length; a++) {
+        final errorsBefore = ctx.errorReporter.errorCount;
+        additionalRules[a](ctx, field);
+        if (!field.canBeContinue) return;
+        if (ctx.errorReporter.errorCount > errorsBefore) return;
+      }
+
+      if (field.value case List values) {
+        currentField.customKeys.clear();
+        currentField.customKeys.addAll(field.customKeys);
+        final baseLength = currentField.customKeys.length;
+
+        for (int i = 0; i < values.length; i++) {
+          currentField.name = field.name;
+          currentField.value = values[i];
+          currentField.canBeContinue = true;
+          currentField.customKeys.length = baseLength;
+          currentField.customKeys.add(_indexToString(i));
+
+          compiledElement(ctx, currentField);
+        }
+        // Zero-copy: return input list directly (no element was mutated)
+        field.mutate(values);
         return;
       }
 
