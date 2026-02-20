@@ -192,11 +192,12 @@ class SchemaCompiler {
 
         for (int i = 0; i < length; i++) {
           final key = keys[i];
+          final raw = fieldValue[key];
           currentField.name = key;
-          currentField.value =
-              fieldValue.containsKey(key) ? fieldValue[key] : _missingValue;
+          currentField.value = (raw == null && !fieldValue.containsKey(key))
+              ? _missingValue
+              : raw;
           currentField.canBeContinue = true;
-          currentField.isUnion = false;
 
           if (!parentKeysEmpty) {
             currentField.customKeys.clear();
@@ -215,6 +216,53 @@ class SchemaCompiler {
       };
     }
 
+    // Semi-fast path: no groups, no transforms, no prepended, but has complex children
+    if (!hasPrepended && !hasGroups && !hasTransforms) {
+      final templateMap = <String, dynamic>{for (final k in keys) k: null};
+
+      return (VineValidationContext ctx, VineFieldContext field) {
+        final fieldValue = field.value;
+        if (fieldValue is! Map) {
+          ctx.errorReporter.reportField('object', field, objectMsg);
+          return;
+        }
+
+        final resultMap = Map<String, dynamic>.of(templateMap);
+        final parentKeysLength = field.customKeys.length;
+
+        for (int i = 0; i < length; i++) {
+          final key = keys[i];
+          final raw = fieldValue[key];
+          currentField.name = key;
+          currentField.value = (raw == null && !fieldValue.containsKey(key))
+              ? _missingValue
+              : raw;
+          currentField.canBeContinue = true;
+          currentField.customKeys.clear();
+          currentField.customKeys.addAll(field.customKeys);
+
+          final childType = childTypes[i];
+          if (childType == 1) {
+            field.customKeys.add(key);
+          } else if (childType == 2) {
+            currentField.customKeys.add(key);
+            field.customKeys.add(key);
+          }
+
+          compiledChildren[i](ctx, currentField);
+          resultMap[key] = currentField.value;
+
+          if (!currentField.canBeContinue || ctx.errorReporter.hasError) break;
+        }
+
+        field.customKeys.length = parentKeysLength;
+        field.mutate(resultMap);
+      };
+    }
+
+    // Generic path: with prepended rules, groups, or transforms
+    final genericTemplateMap = <String, dynamic>{for (final k in keys) k: null};
+
     return (VineValidationContext ctx, VineFieldContext field) {
       // Run prepended rules (nullable, optional, requiredIf*)
       for (int p = 0; p < prependedRules.length; p++) {
@@ -230,14 +278,15 @@ class SchemaCompiler {
         return;
       }
 
-      final resultMap = <String, dynamic>{};
+      final resultMap = Map<String, dynamic>.of(genericTemplateMap);
       final parentKeysLength = field.customKeys.length;
 
       for (int i = 0; i < length; i++) {
         final key = keys[i];
+        final raw = fieldValue[key];
         currentField.name = key;
         currentField.value =
-            fieldValue.containsKey(key) ? fieldValue[key] : _missingValue;
+            (raw == null && !fieldValue.containsKey(key)) ? _missingValue : raw;
         currentField.canBeContinue = true;
         currentField.isUnion = false;
         currentField.customKeys.clear();
@@ -272,9 +321,11 @@ class SchemaCompiler {
           final groupChildren = group.compiledChildren;
           for (int j = 0; j < groupKeys.length; j++) {
             final key = groupKeys[j];
+            final raw = fieldValue[key];
             currentField.name = key;
-            currentField.value =
-                fieldValue.containsKey(key) ? fieldValue[key] : _missingValue;
+            currentField.value = (raw == null && !fieldValue.containsKey(key))
+                ? _missingValue
+                : raw;
             currentField.canBeContinue = true;
             currentField.isUnion = false;
             currentField.customKeys.clear();
