@@ -42,6 +42,14 @@ final class VineField implements VineFieldContext {
 
   VineField(this.name, this.value);
 
+  void reset(String name, dynamic value) {
+    this.name = name;
+    this.value = value;
+    canBeContinue = true;
+    isUnion = false;
+    customKeys.clear();
+  }
+
   @override
   void mutate(dynamic value) {
     this.value = value;

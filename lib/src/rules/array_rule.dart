@@ -18,8 +18,10 @@ final class VineArrayRule implements VineRule {
   void handle(VineValidationContext ctx, VineFieldContext field) {
     if (field.value case List values) {
       final List result = List.filled(values.length, null);
+      final currentField =
+          VineField(field.name, values.isEmpty ? null : values[0]);
       for (int i = 0; i < values.length; i++) {
-        final currentField = VineField(field.name, values[i]);
+        currentField.reset(field.name, values[i]);
         currentField.customKeys.addAll(field.customKeys);
         currentField.customKeys.add(_indexToString(i));
 
@@ -50,9 +52,16 @@ final class VineArrayUniqueRule implements VineRule {
     }
 
     final values = field.value as List;
-    final unique = values.toSet().toList();
+    final seen = <dynamic>{};
+    bool hasDuplicate = false;
+    for (final item in values) {
+      if (!seen.add(item)) {
+        hasDuplicate = true;
+        break;
+      }
+    }
 
-    if (values.length != unique.length) {
+    if (hasDuplicate) {
       final error =
           ctx.errorReporter.format('array.unique', field, message, {});
       ctx.errorReporter.reportField('array.unique', field, error);

@@ -27,7 +27,7 @@ final class VineObjectRule implements VineRule {
 
       final currentField = VineField(
           key, fieldValue.containsKey(key) ? field.value[key] : MissingValue())
-        ..customKeys.addAll(field.customKeys);
+        ..customKeys = List.of(field.customKeys, growable: true);
 
       switch (schema) {
         case VineArray():
