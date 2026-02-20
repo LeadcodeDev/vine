@@ -218,6 +218,12 @@ class SchemaCompiler {
 
     // Semi-fast path: no groups, no transforms, no prepended, but has complex children
     if (!hasPrepended && !hasGroups && !hasTransforms) {
+      // Check if recursively pure (all children at all levels are non-mutating)
+      if (schemas.every(_isRecursivelyPure)) {
+        return _compileSemiFastPure(
+            keys, compiledChildren, childTypes, length, objectMsg);
+      }
+
       final templateMap = <String, dynamic>{for (final k in keys) k: null};
 
       return (VineValidationContext ctx, VineFieldContext field) {
@@ -400,7 +406,99 @@ class SchemaCompiler {
         r is VinePositiveRule ||
         r is VineDoubleRule ||
         r is VineIntegerRule ||
-        r is VineAnyRule;
+        r is VineAnyRule ||
+        r is VineNullableRule ||
+        r is VineOptionalRule;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Helper: check if a schema is recursively pure (no mutations at any level)
+  // ---------------------------------------------------------------------------
+  static bool _isRecursivelyPure(VineSchema schema) {
+    return switch (schema) {
+      VineObjectSchema() => _isObjectRecursivelyPure(schema),
+      VineArraySchema() => false,
+      VineUnionSchema() => false,
+      VineGroupSchema() => false,
+      _ => _getRulesFromLeafSchema(schema).every(_isNonMutatingRule),
+    };
+  }
+
+  static bool _isObjectRecursivelyPure(VineObjectSchema schema) {
+    if (schema.rules.any((r) => r is VineTransformRule)) return false;
+    if (schema.rules.any((r) =>
+        r is VineNullableRule ||
+        r is VineOptionalRule ||
+        r is VineRequiredIfExistRule ||
+        r is VineRequiredIfAnyExistRule ||
+        r is VineRequiredIfMissingRule ||
+        r is VineRequiredIfAnyMissingRule)) {
+      return false;
+    }
+    if (schema.rules.any((r) => r is VineObjectGroupRule)) return false;
+    for (final child in schema.properties.values) {
+      if (!_isRecursivelyPure(child)) return false;
+    }
+    return true;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Semi-fast pure: zero-copy for objects with complex children (all pure)
+  // ---------------------------------------------------------------------------
+  static CompiledValidatorFn _compileSemiFastPure(
+    List<String> keys,
+    List<CompiledValidatorFn> compiledChildren,
+    List<int> childTypes,
+    int length,
+    String objectMsg,
+  ) {
+    final currentField = VineField('', null);
+
+    return (VineValidationContext ctx, VineFieldContext field) {
+      final fieldValue = field.value;
+      if (fieldValue is! Map) {
+        ctx.errorReporter.reportField('object', field, objectMsg);
+        return;
+      }
+
+      final parentKeysLength = field.customKeys.length;
+
+      for (int i = 0; i < length; i++) {
+        final key = keys[i];
+        final raw = fieldValue[key];
+        currentField.name = key;
+        currentField.value =
+            (raw == null && !fieldValue.containsKey(key)) ? _missingValue : raw;
+        currentField.canBeContinue = true;
+
+        final childType = childTypes[i];
+        if (childType == 0) {
+          // Leaf child: just clear (no parent keys to copy for error path)
+          currentField.customKeys.clear();
+          if (parentKeysLength > 0) {
+            currentField.customKeys.addAll(field.customKeys);
+          }
+        } else {
+          currentField.customKeys.clear();
+          currentField.customKeys.addAll(field.customKeys);
+          if (childType == 2) {
+            currentField.customKeys.add(key);
+            field.customKeys.add(key);
+          }
+        }
+
+        compiledChildren[i](ctx, currentField);
+
+        if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+          field.customKeys.length = parentKeysLength;
+          field.mutate(fieldValue);
+          return;
+        }
+      }
+
+      field.customKeys.length = parentKeysLength;
+      field.mutate(fieldValue);
+    };
   }
 
   // ---------------------------------------------------------------------------
