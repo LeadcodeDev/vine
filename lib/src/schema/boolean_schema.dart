@@ -58,7 +58,10 @@ final class VineBooleanSchema extends RuleParser implements VineBoolean {
 
   @override
   VineBoolean clone() {
-    return VineBooleanSchema([...rules]);
+    final cloned = VineBooleanSchema([...rules]);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

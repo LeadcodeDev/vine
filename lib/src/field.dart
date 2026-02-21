@@ -6,7 +6,7 @@ final class VineValidatorContext<T extends VineErrorReporter>
   final T errorReporter;
 
   @override
-  final dynamic data;
+  dynamic data;
 
   @override
   Map<String, dynamic> getFieldContext(List<String> keys) {
@@ -41,6 +41,14 @@ final class VineField implements VineFieldContext {
   bool isUnion = false;
 
   VineField(this.name, this.value);
+
+  void reset(String name, dynamic value) {
+    this.name = name;
+    this.value = value;
+    canBeContinue = true;
+    isUnion = false;
+    customKeys.clear();
+  }
 
   @override
   void mutate(dynamic value) {

@@ -10,21 +10,27 @@ final class VineUnionRule implements VineRule {
 
   @override
   void handle(VineValidationContext ctx, VineFieldContext field) {
-    final List errors = [];
     field.customKeys.add(field.name);
     final currentField = VineField(field.name, field.value);
-
     currentField.isUnion = true;
+
+    int failCount = 0;
+
     for (final schema in schemas) {
-      try {
-        schema.parse(ctx, currentField);
-      } catch (e) {
-        errors.add(e);
+      final errorsBeforeAttempt = ctx.errorReporter.errorCount;
+      schema.parse(ctx, currentField);
+
+      if (ctx.errorReporter.errorCount > errorsBeforeAttempt) {
+        ctx.errorReporter.rollbackTo(errorsBeforeAttempt);
+        failCount++;
+      } else {
+        break;
       }
     }
+
     currentField.isUnion = false;
 
-    if (errors.length == schemas.length) {
+    if (failCount == schemas.length) {
       final error = ctx.errorReporter.format('union', field, null, {
         'types': schemas
             .map((schema) =>
@@ -33,7 +39,6 @@ final class VineUnionRule implements VineRule {
       });
 
       ctx.errorReporter.report('union', field.customKeys, error);
-      throw ctx.errorReporter.createError({'errors': ctx.errorReporter.errors});
     }
   }
 }

@@ -95,7 +95,10 @@ final class VineDateSchema extends RuleParser implements VineDate {
 
   @override
   VineDate clone() {
-    return VineDateSchema([...rules]);
+    final cloned = VineDateSchema([...rules]);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

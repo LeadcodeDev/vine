@@ -3,6 +3,8 @@ abstract interface class VineErrorReporter {
 
   abstract bool hasError;
 
+  int get errorCount;
+
   bool hasErrorForField(String fieldName);
 
   String format(String rule, VineFieldContext field, String? message,
@@ -10,9 +12,13 @@ abstract interface class VineErrorReporter {
 
   void report(String rule, List<String> keys, String message);
 
+  void reportField(String rule, VineFieldContext field, String message);
+
   Exception createError(Map<String, dynamic> message);
 
   void clear();
+
+  void rollbackTo(int errorCount);
 }
 
 abstract interface class VineValidatorContract {}
@@ -39,4 +45,8 @@ abstract interface class VineFieldContext {
 
 typedef ParseHandler = void Function(VineValidationContext, VineFieldContext);
 
-final class MissingValue {}
+final class MissingValue {
+  static final _instance = MissingValue._();
+  const MissingValue._();
+  factory MissingValue() => _instance;
+}

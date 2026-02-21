@@ -57,7 +57,10 @@ final class VineEnumSchema<T extends VineEnumerable> extends RuleParser
 
   @override
   VineEnum<T> clone() {
-    return VineEnumSchema([...rules], _source.toList());
+    final cloned = VineEnumSchema<T>([...rules], _source.toList());
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

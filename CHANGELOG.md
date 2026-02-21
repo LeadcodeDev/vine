@@ -1,3 +1,11 @@
+## 1.8.0
+
+- Major performance improvements to the compiled validation pipeline
+- Inline type-checks for simple leaf schemas (string, optional string, nullable string) eliminating closure call overhead
+- Flatten nested pure objects into a single closure with direct map traversal
+- Capture error reporter directly in compiled closures, removing virtual dispatch
+- Benchmarks: Flat Object **18M ops/s** (+3x), Nested Object **9.5M ops/s** (+4x), Array Object **12M ops/s** (+3x)
+
 ## 1.7.2
 
 - Keep vine rules accross many validations

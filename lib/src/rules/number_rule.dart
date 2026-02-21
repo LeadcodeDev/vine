@@ -3,12 +3,8 @@ import 'package:vine/src/contracts/vine.dart';
 
 void handleNumberConversionError(
     VineValidationContext ctx, VineFieldContext field, String? message) {
-  if (field.isUnion) {
-    throw Exception('Union type is not supported for number type');
-  }
-
   final error = ctx.errorReporter.format('number', field, message, {});
-  ctx.errorReporter.report('number', [...field.customKeys, field.name], error);
+  ctx.errorReporter.reportField('number', field, error);
 }
 
 final class VineNumberRule implements VineRule {
@@ -47,7 +43,7 @@ final class VineMinRule implements VineRule {
         'min': minValue,
       });
 
-      ctx.errorReporter.report('min', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('min', field, error);
     }
   }
 }
@@ -65,7 +61,7 @@ final class VineMaxRule implements VineRule {
         'max': maxValue,
       });
 
-      ctx.errorReporter.report('max', [...field.customKeys, field.name], error);
+      ctx.errorReporter.reportField('max', field, error);
     }
   }
 }
@@ -84,7 +80,7 @@ final class VineRangeRule implements VineRule {
       });
 
       ctx.errorReporter
-          .report('range', [...field.customKeys, field.name], error);
+          .reportField('range', field, error);
     }
   }
 }
@@ -99,7 +95,7 @@ final class VineNegativeRule implements VineRule {
     if (field.value case num value when !value.isNegative) {
       final error = ctx.errorReporter.format('negative', field, message, {});
       ctx.errorReporter
-          .report('negative', [...field.customKeys, field.name], error);
+          .reportField('negative', field, error);
     }
   }
 }
@@ -114,7 +110,7 @@ final class VinePositiveRule implements VineRule {
     if (field.value case num value when value.isNegative) {
       final error = ctx.errorReporter.format('positive', field, message, {});
       ctx.errorReporter
-          .report('positive', [...field.customKeys, field.name], error);
+          .reportField('positive', field, error);
     }
   }
 }
@@ -129,7 +125,7 @@ final class VineDoubleRule implements VineRule {
     if (field.value case num value when value is! double) {
       final error = ctx.errorReporter.format('double', field, message, {});
       ctx.errorReporter
-          .report('double', [...field.customKeys, field.name], error);
+          .reportField('double', field, error);
     }
   }
 }
@@ -144,7 +140,7 @@ final class VineIntegerRule implements VineRule {
     if (field.value case num value when value is! int) {
       final error = ctx.errorReporter.format('integer', field, message, {});
       ctx.errorReporter
-          .report('integer', [...field.customKeys, field.name], error);
+          .reportField('integer', field, error);
     }
   }
 }

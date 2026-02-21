@@ -18,6 +18,8 @@ final class VineObjectRule implements VineRule {
 
     final Map<String, dynamic> resultMap = {};
     bool shouldBreak = false;
+    final currentField = VineField('', null);
+    final parentKeysLength = field.customKeys.length;
 
     for (final entry in payload.entries) {
       if (shouldBreak) break;
@@ -25,9 +27,9 @@ final class VineObjectRule implements VineRule {
       final key = entry.key;
       final schema = entry.value;
 
-      final currentField = VineField(
-          key, fieldValue.containsKey(key) ? field.value[key] : MissingValue())
-        ..customKeys.addAll(List.of(field.customKeys, growable: false));
+      currentField.reset(
+          key, fieldValue.containsKey(key) ? fieldValue[key] : MissingValue());
+      currentField.customKeys.addAll(field.customKeys);
 
       switch (schema) {
         case VineArray():
@@ -48,11 +50,8 @@ final class VineObjectRule implements VineRule {
       shouldBreak = !currentField.canBeContinue || ctx.errorReporter.hasError;
     }
 
-    final cleanedMap = {
-      for (final key in fieldValue.keys)
-        if (payload.containsKey(key)) key: resultMap[key] ?? fieldValue[key]
-    };
+    field.customKeys.length = parentKeysLength;
 
-    field.mutate(cleanedMap);
+    field.mutate(resultMap);
   }
 }

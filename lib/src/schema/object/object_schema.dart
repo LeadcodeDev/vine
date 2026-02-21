@@ -69,7 +69,10 @@ final class VineObjectSchema extends RuleParser implements VineObject {
       props[entry.key] = entry.value.clone();
     }
 
-    return VineObjectSchema(props, [...rules]);
+    final cloned = VineObjectSchema(props, [...rules]);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

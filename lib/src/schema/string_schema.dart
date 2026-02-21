@@ -206,7 +206,10 @@ final class VineStringSchema extends RuleParser implements VineString {
 
   @override
   VineString clone() {
-    return VineStringSchema([...rules]);
+    final cloned = VineStringSchema([...rules]);
+    cloned.isNullable = isNullable;
+    cloned.isOptional = isOptional;
+    return cloned;
   }
 
   @override

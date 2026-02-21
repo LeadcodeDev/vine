@@ -1,3 +1,4 @@
+import 'package:vine/src/compiler.dart';
 import 'package:vine/src/contracts/rule.dart';
 import 'package:vine/src/contracts/schema.dart';
 import 'package:vine/src/contracts/vine.dart';
@@ -125,10 +126,17 @@ final class Validator implements VineValidatorContract {
   final VineSchema _schema;
   final Map<String, String> errors;
   final reporter = vine.errorReporter({});
+  late final _validatorContext = VineValidatorContext(reporter, null);
+  final _rootField = VineField('', null);
+  late final CompiledValidatorFn _compiled;
 
-  Validator(this._schema, this.errors);
+  Validator(this._schema, this.errors) {
+    final r = reporter;
+    _compiled =
+        SchemaCompiler.compile(_schema, r is SimpleErrorReporter ? r : null);
+  }
 
-  VineSchema get schema => _schema.clone();
+  VineSchema get schema => _schema;
 
   (VineValidationException?, T?) tryValidate<T>(dynamic data) {
     try {
@@ -140,17 +148,17 @@ final class Validator implements VineValidatorContract {
   }
 
   T validate<T>(dynamic data) {
-    final validatorContext = VineValidatorContext(reporter, data);
-    final field = VineField('', data);
+    _validatorContext.data = data;
+    _rootField.reset('', data);
 
-    _schema.parse(validatorContext, field);
+    _compiled(_validatorContext, _rootField);
 
     if (reporter.hasError) {
       throw reporter.createError({'errors': reporter.errors});
     }
 
     reporter.clear();
-    return field.value;
+    return _rootField.value;
   }
 }
 

@@ -19,7 +19,18 @@ final class VineGroupSchema extends RuleParser implements VineGroup {
 
   @override
   VineGroup clone() {
-    return VineGroupSchema([...rules]);
+    final clonedRules = rules.map((rule) {
+      if (rule is VineObjectGroupRule) {
+        final clonedObject = <String, VineSchema>{};
+        for (final entry in rule.object.entries) {
+          clonedObject[entry.key] = entry.value.clone();
+        }
+        return VineObjectGroupRule(rule.fn, clonedObject);
+      }
+      return rule;
+    }).toList();
+
+    return VineGroupSchema(clonedRules);
   }
 
   @override
