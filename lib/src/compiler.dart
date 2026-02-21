@@ -1,4 +1,5 @@
 import 'package:vine/src/contracts/vine.dart';
+import 'package:vine/src/error_reporter.dart';
 import 'package:vine/src/field.dart';
 import 'package:vine/src/helper.dart';
 import 'package:vine/src/mapped_errors.dart';
@@ -31,16 +32,18 @@ typedef CompiledValidatorFn = void Function(
     VineValidationContext ctx, VineFieldContext field);
 
 class SchemaCompiler {
-  static CompiledValidatorFn compile(VineSchema schema) {
-    return _compileSchema(schema);
+  static CompiledValidatorFn compile(VineSchema schema,
+      [SimpleErrorReporter? reporter]) {
+    return _compileSchema(schema, reporter);
   }
 
-  static CompiledValidatorFn _compileSchema(VineSchema schema) {
+  static CompiledValidatorFn _compileSchema(VineSchema schema,
+      [SimpleErrorReporter? reporter]) {
     return switch (schema) {
-      VineObjectSchema() => _compileObject(schema),
-      VineArraySchema() => _compileArray(schema),
-      VineUnionSchema() => _compileUnion(schema),
-      VineGroupSchema() => _compileGroup(schema),
+      VineObjectSchema() => _compileObject(schema, reporter),
+      VineArraySchema() => _compileArray(schema, reporter),
+      VineUnionSchema() => _compileUnion(schema, reporter),
+      VineGroupSchema() => _compileGroup(schema, reporter),
       VineStringSchema() => _compileRules(schema.rules),
       VineNumberSchema() => _compileRules(schema.rules),
       VineBooleanSchema() => _compileRules(schema.rules),
@@ -54,14 +57,15 @@ class SchemaCompiler {
   // ---------------------------------------------------------------------------
   // Object compilation
   // ---------------------------------------------------------------------------
-  static CompiledValidatorFn _compileObject(VineObjectSchema schema) {
+  static CompiledValidatorFn _compileObject(VineObjectSchema schema,
+      [SimpleErrorReporter? reporter]) {
     final properties = schema.properties;
     final int length = properties.length;
     final keys = properties.keys.toList(growable: false);
     final schemas = properties.values.toList(growable: false);
     final compiledChildren = List<CompiledValidatorFn>.generate(
       length,
-      (i) => _compileSchema(schemas[i]),
+      (i) => _compileSchema(schemas[i], reporter),
       growable: false,
     );
     // Pre-compute child types for customKeys handling (mirrors VineObjectRule behavior)
@@ -170,8 +174,21 @@ class SchemaCompiler {
           }
 
           if (childrenArePure) {
-            return _compileMonomorphicFlatPure(keys, compiledChildren, length,
-                objectMsg, !anyChildNullSensitive);
+            final inlineKinds = List<_InlineKind>.generate(
+                length, (i) => _getInlineKind(schemas[i]),
+                growable: false);
+            final inlineMsgs = List<String?>.generate(
+                length, (i) => _getInlineMsg(schemas[i]),
+                growable: false);
+            return _compileMonomorphicFlatPure(
+                keys,
+                compiledChildren,
+                length,
+                objectMsg,
+                !anyChildNullSensitive,
+                inlineKinds,
+                inlineMsgs,
+                reporter);
           }
 
           return _compileMonomorphicFlat(keys, compiledChildren, length,
@@ -220,8 +237,23 @@ class SchemaCompiler {
     if (!hasPrepended && !hasGroups && !hasTransforms) {
       // Check if recursively pure (all children at all levels are non-mutating)
       if (schemas.every(_isRecursivelyPure)) {
-        return _compileSemiFastPure(
-            keys, compiledChildren, childTypes, length, objectMsg);
+        // Try flattening nested pure objects into a single closure
+        if (!childTypes.contains(1)) {
+          final flatFields = _flattenPureObject(schema, 0, const []);
+          if (flatFields != null) {
+            return _compileFlattenedPure(flatFields, objectMsg, reporter);
+          }
+        }
+        final semiFastChildNeedsSafeNull = List<bool>.generate(length, (i) {
+          if (schemas[i] is VineObjectSchema || schemas[i] is VineArraySchema) {
+            return true;
+          }
+          final rules = _getRulesFromLeafSchema(schemas[i]);
+          return rules
+              .any((r) => r is VineNullableRule || r is VineOptionalRule);
+        }, growable: false);
+        return _compileSemiFastPure(keys, compiledChildren, childTypes, length,
+            objectMsg, semiFastChildNeedsSafeNull);
       }
 
       final templateMap = <String, dynamic>{for (final k in keys) k: null};
@@ -451,6 +483,7 @@ class SchemaCompiler {
     List<int> childTypes,
     int length,
     String objectMsg,
+    List<bool> childNeedsSafeNull,
   ) {
     final currentField = VineField('', null);
 
@@ -465,10 +498,15 @@ class SchemaCompiler {
 
       for (int i = 0; i < length; i++) {
         final key = keys[i];
-        final raw = fieldValue[key];
         currentField.name = key;
-        currentField.value =
-            (raw == null && !fieldValue.containsKey(key)) ? _missingValue : raw;
+        if (childNeedsSafeNull[i]) {
+          final raw = fieldValue[key];
+          currentField.value = (raw == null && !fieldValue.containsKey(key))
+              ? _missingValue
+              : raw;
+        } else {
+          currentField.value = fieldValue[key] ?? _missingValue;
+        }
         currentField.canBeContinue = true;
 
         final childType = childTypes[i];
@@ -505,16 +543,150 @@ class SchemaCompiler {
   // Monomorphic flat object compilation — zero-copy (pure children)
   // When no child rule mutates values, return the input map directly.
   // ---------------------------------------------------------------------------
+
+  // ---------------------------------------------------------------------------
+  // Helper: determine if a leaf schema can be inlined as a simple type-check
+  // ---------------------------------------------------------------------------
+  static _InlineKind _getInlineKind(VineSchema schema) {
+    if (schema is VineStringSchema) {
+      final rules = schema.rules;
+      if (rules.length == 1 && rules[0] is VineStringRule) {
+        return _InlineKind.stringCheck;
+      }
+      if (rules.length == 2) {
+        if (rules[0] is VineOptionalRule && rules[1] is VineStringRule) {
+          return _InlineKind.optionalString;
+        }
+        if (rules[0] is VineNullableRule && rules[1] is VineStringRule) {
+          return _InlineKind.nullableString;
+        }
+      }
+    }
+    return _InlineKind.closureCall;
+  }
+
+  /// Returns the pre-computed error message for an inlinable schema, or null.
+  static String? _getInlineMsg(VineSchema schema) {
+    if (schema is VineStringSchema) {
+      final rules = schema.rules;
+      for (final r in rules) {
+        if (r is VineStringRule) {
+          return r.message ?? mappedErrors['string']!;
+        }
+      }
+    }
+    return null;
+  }
+
   static CompiledValidatorFn _compileMonomorphicFlatPure(
     List<String> keys,
     List<CompiledValidatorFn> compiledChildren,
     int length,
     String objectMsg,
     bool canUseFastNull,
+    List<_InlineKind> inlineKinds,
+    List<String?> inlineMsgs,
+    SimpleErrorReporter? reporter,
   ) {
     final currentField = VineField('', null);
 
+    // Check if ALL children are inlinable (no closure calls needed at all)
+    final allInlinable = !inlineKinds.contains(_InlineKind.closureCall);
+
+    if (canUseFastNull && allInlinable) {
+      if (reporter != null) {
+        // Fastest path with direct reporter access (no virtual dispatch)
+        return (VineValidationContext ctx, VineFieldContext field) {
+          final fv = field.value;
+          if (fv is! Map) {
+            reporter.reportField('object', field, objectMsg);
+            return;
+          }
+
+          for (int i = 0; i < length; i++) {
+            final v = fv[keys[i]] ?? _missingValue;
+            if (v is! String) {
+              currentField.name = keys[i];
+              currentField.value = v;
+              reporter.reportField('string', currentField, inlineMsgs[i]!);
+              field.mutate(fv);
+              return;
+            }
+          }
+
+          field.mutate(fv);
+        };
+      }
+      // Fallback without reporter
+      return (VineValidationContext ctx, VineFieldContext field) {
+        final fv = field.value;
+        if (fv is! Map) {
+          ctx.errorReporter.reportField('object', field, objectMsg);
+          return;
+        }
+
+        for (int i = 0; i < length; i++) {
+          final v = fv[keys[i]] ?? _missingValue;
+          if (v is! String) {
+            currentField.name = keys[i];
+            currentField.value = v;
+            ctx.errorReporter
+                .reportField('string', currentField, inlineMsgs[i]!);
+            field.mutate(fv);
+            return;
+          }
+        }
+
+        field.mutate(fv);
+      };
+    }
+
     if (canUseFastNull) {
+      if (reporter != null) {
+        return (VineValidationContext ctx, VineFieldContext field) {
+          final fv = field.value;
+          if (fv is! Map) {
+            reporter.reportField('object', field, objectMsg);
+            return;
+          }
+
+          for (int i = 0; i < length; i++) {
+            final key = keys[i];
+            final v = fv[key] ?? _missingValue;
+
+            switch (inlineKinds[i]) {
+              case _InlineKind.stringCheck:
+                if (v is! String) {
+                  currentField.name = key;
+                  currentField.value = v;
+                  reporter.reportField('string', currentField, inlineMsgs[i]!);
+                  field.mutate(fv);
+                  return;
+                }
+              case _InlineKind.closureCall:
+                currentField.name = key;
+                currentField.value = v;
+                currentField.canBeContinue = true;
+                compiledChildren[i](ctx, currentField);
+                if (!currentField.canBeContinue || reporter.hasError) {
+                  field.mutate(fv);
+                  return;
+                }
+              default:
+                currentField.name = key;
+                currentField.value = v;
+                currentField.canBeContinue = true;
+                compiledChildren[i](ctx, currentField);
+                if (!currentField.canBeContinue || reporter.hasError) {
+                  field.mutate(fv);
+                  return;
+                }
+            }
+          }
+
+          field.mutate(fv);
+        };
+      }
       return (VineValidationContext ctx, VineFieldContext field) {
         final fv = field.value;
         if (fv is! Map) {
@@ -524,24 +696,108 @@ class SchemaCompiler {
 
         for (int i = 0; i < length; i++) {
           final key = keys[i];
-          currentField.name = key;
-          currentField.value = fv[key] ?? _missingValue;
-          currentField.canBeContinue = true;
+          final v = fv[key] ?? _missingValue;
 
-          compiledChildren[i](ctx, currentField);
-
-          if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
-            field.mutate(fv);
-            return;
+          switch (inlineKinds[i]) {
+            case _InlineKind.stringCheck:
+              if (v is! String) {
+                currentField.name = key;
+                currentField.value = v;
+                ctx.errorReporter
+                    .reportField('string', currentField, inlineMsgs[i]!);
+                field.mutate(fv);
+                return;
+              }
+            case _InlineKind.closureCall:
+              currentField.name = key;
+              currentField.value = v;
+              currentField.canBeContinue = true;
+              compiledChildren[i](ctx, currentField);
+              if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+                field.mutate(fv);
+                return;
+              }
+            default:
+              currentField.name = key;
+              currentField.value = v;
+              currentField.canBeContinue = true;
+              compiledChildren[i](ctx, currentField);
+              if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+                field.mutate(fv);
+                return;
+              }
           }
         }
 
-        // Zero-copy: return input map directly (no child mutated any value)
         field.mutate(fv);
       };
     }
 
     // Safe null path (nullable/optional children)
+    if (reporter != null) {
+      return (VineValidationContext ctx, VineFieldContext field) {
+        final fv = field.value;
+        if (fv is! Map) {
+          reporter.reportField('object', field, objectMsg);
+          return;
+        }
+
+        for (int i = 0; i < length; i++) {
+          final key = keys[i];
+
+          switch (inlineKinds[i]) {
+            case _InlineKind.stringCheck:
+              final v = fv[key] ?? _missingValue;
+              if (v is! String) {
+                currentField.name = key;
+                currentField.value = v;
+                reporter.reportField('string', currentField, inlineMsgs[i]!);
+                field.mutate(fv);
+                return;
+              }
+            case _InlineKind.optionalString:
+              final raw = fv[key];
+              if (raw == null && !fv.containsKey(key)) {
+                continue;
+              }
+              if (raw is! String) {
+                currentField.name = key;
+                currentField.value = raw;
+                reporter.reportField('string', currentField, inlineMsgs[i]!);
+                field.mutate(fv);
+                return;
+              }
+            case _InlineKind.nullableString:
+              final raw = fv[key];
+              if (raw == null && fv.containsKey(key)) {
+                continue;
+              }
+              if (raw is! String) {
+                currentField.name = key;
+                currentField.value =
+                    (raw == null && !fv.containsKey(key)) ? _missingValue : raw;
+                reporter.reportField('string', currentField, inlineMsgs[i]!);
+                field.mutate(fv);
+                return;
+              }
+            case _InlineKind.closureCall:
+              final raw = fv[key];
+              currentField.name = key;
+              currentField.value =
+                  (raw == null && !fv.containsKey(key)) ? _missingValue : raw;
+              currentField.canBeContinue = true;
+              compiledChildren[i](ctx, currentField);
+              if (!currentField.canBeContinue || reporter.hasError) {
+                field.mutate(fv);
+                return;
+              }
+          }
+        }
+
+        field.mutate(fv);
+      };
+    }
+
     return (VineValidationContext ctx, VineFieldContext field) {
       final fv = field.value;
       if (fv is! Map) {
@@ -551,17 +807,56 @@ class SchemaCompiler {
 
       for (int i = 0; i < length; i++) {
         final key = keys[i];
-        final raw = fv[key];
-        currentField.name = key;
-        currentField.value =
-            (raw == null && !fv.containsKey(key)) ? _missingValue : raw;
-        currentField.canBeContinue = true;
 
-        compiledChildren[i](ctx, currentField);
-
-        if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
-          field.mutate(fv);
-          return;
+        switch (inlineKinds[i]) {
+          case _InlineKind.stringCheck:
+            final v = fv[key] ?? _missingValue;
+            if (v is! String) {
+              currentField.name = key;
+              currentField.value = v;
+              ctx.errorReporter
+                  .reportField('string', currentField, inlineMsgs[i]!);
+              field.mutate(fv);
+              return;
+            }
+          case _InlineKind.optionalString:
+            final raw = fv[key];
+            if (raw == null && !fv.containsKey(key)) {
+              continue;
+            }
+            if (raw is! String) {
+              currentField.name = key;
+              currentField.value = raw;
+              ctx.errorReporter
+                  .reportField('string', currentField, inlineMsgs[i]!);
+              field.mutate(fv);
+              return;
+            }
+          case _InlineKind.nullableString:
+            final raw = fv[key];
+            if (raw == null && fv.containsKey(key)) {
+              continue;
+            }
+            if (raw is! String) {
+              currentField.name = key;
+              currentField.value =
+                  (raw == null && !fv.containsKey(key)) ? _missingValue : raw;
+              ctx.errorReporter
+                  .reportField('string', currentField, inlineMsgs[i]!);
+              field.mutate(fv);
+              return;
+            }
+          case _InlineKind.closureCall:
+            final raw = fv[key];
+            currentField.name = key;
+            currentField.value =
+                (raw == null && !fv.containsKey(key)) ? _missingValue : raw;
+            currentField.canBeContinue = true;
+            compiledChildren[i](ctx, currentField);
+            if (!currentField.canBeContinue || ctx.errorReporter.hasError) {
+              field.mutate(fv);
+              return;
+            }
         }
       }
 
@@ -647,9 +942,10 @@ class SchemaCompiler {
   // ---------------------------------------------------------------------------
   // Array compilation
   // ---------------------------------------------------------------------------
-  static CompiledValidatorFn _compileArray(VineArraySchema schema) {
+  static CompiledValidatorFn _compileArray(VineArraySchema schema,
+      [SimpleErrorReporter? reporter]) {
     final arrayRule = schema.rules.whereType<VineArrayRule>().first;
-    final compiledElement = _compileSchema(arrayRule.schema);
+    final compiledElement = _compileSchema(arrayRule.schema, reporter);
 
     // Compile additional rules (minLength, maxLength, unique, etc.)
     final additionalRules = schema.rules
@@ -746,11 +1042,13 @@ class SchemaCompiler {
   // ---------------------------------------------------------------------------
   // Union compilation
   // ---------------------------------------------------------------------------
-  static CompiledValidatorFn _compileUnion(VineUnionSchema schema) {
+  static CompiledValidatorFn _compileUnion(VineUnionSchema schema,
+      [SimpleErrorReporter? reporter]) {
     // Access the internal schemas through the union rule
     final unionRule = schema.rules.whereType<VineUnionRule>().first;
-    final compiledSchemas =
-        unionRule.schemas.map(_compileSchema).toList(growable: false);
+    final compiledSchemas = unionRule.schemas
+        .map((s) => _compileSchema(s, reporter))
+        .toList(growable: false);
     final schemaTypes = unionRule.schemas
         .map((s) => s.runtimeType.toString().replaceFirst('Schema', ''))
         .join(', ');
@@ -827,7 +1125,8 @@ class SchemaCompiler {
   // ---------------------------------------------------------------------------
   // Group compilation
   // ---------------------------------------------------------------------------
-  static CompiledValidatorFn _compileGroup(VineGroupSchema schema) {
+  static CompiledValidatorFn _compileGroup(VineGroupSchema schema,
+      [SimpleErrorReporter? reporter]) {
     final compiledRules =
         schema.rules.map(_compileRule).toList(growable: false);
 
@@ -1620,6 +1919,206 @@ class SchemaCompiler {
   }
 
   // ---------------------------------------------------------------------------
+  // Flattened pure object: flatten nested pure objects into a single closure
+  // ---------------------------------------------------------------------------
+  static CompiledValidatorFn _compileFlattenedPure(
+    List<_FlatField> fields,
+    String rootObjectMsg,
+    SimpleErrorReporter? reporter,
+  ) {
+    final currentField = VineField('', null);
+    final int totalFields = fields.length;
+    final maxDepth = fields.fold<int>(0, (m, f) => f.depth > m ? f.depth : m);
+    final mapStack = List<Map>.filled(maxDepth + 2, const {});
+
+    // Pre-extract into parallel arrays for cache-friendly iteration
+    final fKeys = List<String>.generate(totalFields, (i) => fields[i].key,
+        growable: false);
+    final fDepths = List<int>.generate(totalFields, (i) => fields[i].depth,
+        growable: false);
+    final fIsObject = List<bool>.generate(
+        totalFields, (i) => fields[i].isObjectCheck,
+        growable: false);
+    final fNeedsSafe = List<bool>.generate(
+        totalFields, (i) => fields[i].needsSafeNull,
+        growable: false);
+    final fValidators = List<CompiledValidatorFn?>.generate(
+        totalFields, (i) => fields[i].validator,
+        growable: false);
+    final fObjectMsgs = List<String?>.generate(
+        totalFields, (i) => fields[i].objectMsg,
+        growable: false);
+    final fPrefixes = List<List<String>>.generate(
+        totalFields, (i) => fields[i].errorPrefix,
+        growable: false);
+    final fInlineKinds = List<_InlineKind>.generate(
+        totalFields, (i) => fields[i].inlineKind,
+        growable: false);
+    final fInlineMsgs = List<String?>.generate(
+        totalFields, (i) => fields[i].inlineMsg,
+        growable: false);
+
+    // Resolve reporter: use captured reporter for direct access, or fall back to ctx
+    final SimpleErrorReporter? rp = reporter;
+
+    return (VineValidationContext ctx, VineFieldContext field) {
+      final er = rp ?? ctx.errorReporter as SimpleErrorReporter;
+      final data = field.value;
+      if (data is! Map) {
+        er.reportField('object', field, rootObjectMsg);
+        return;
+      }
+
+      final parentKeysLength = field.customKeys.length;
+      mapStack[0] = data;
+
+      for (int i = 0; i < totalFields; i++) {
+        final depth = fDepths[i];
+        final key = fKeys[i];
+
+        if (fIsObject[i]) {
+          final raw = mapStack[depth][key];
+          if (raw is! Map) {
+            currentField.name = key;
+            currentField.customKeys.length = parentKeysLength;
+            final prefix = fPrefixes[i];
+            for (int p = 0; p < prefix.length; p++) {
+              currentField.customKeys.add(prefix[p]);
+            }
+            er.reportField('object', currentField, fObjectMsgs[i]!);
+            field.customKeys.length = parentKeysLength;
+            field.mutate(data);
+            return;
+          }
+          mapStack[depth + 1] = raw;
+          continue;
+        }
+
+        final map = mapStack[depth];
+
+        switch (fInlineKinds[i]) {
+          case _InlineKind.stringCheck:
+            final v = map[key] ?? _missingValue;
+            if (v is! String) {
+              currentField.name = key;
+              currentField.value = v;
+              currentField.customKeys.length = parentKeysLength;
+              final prefix = fPrefixes[i];
+              for (int p = 0; p < prefix.length; p++) {
+                currentField.customKeys.add(prefix[p]);
+              }
+              er.reportField('string', currentField, fInlineMsgs[i]!);
+              field.customKeys.length = parentKeysLength;
+              field.mutate(data);
+              return;
+            }
+          case _InlineKind.optionalString:
+            final raw = map[key];
+            if (raw == null && !map.containsKey(key)) {
+              continue;
+            }
+            if (raw is! String) {
+              currentField.name = key;
+              currentField.value = raw;
+              currentField.customKeys.length = parentKeysLength;
+              final prefix = fPrefixes[i];
+              for (int p = 0; p < prefix.length; p++) {
+                currentField.customKeys.add(prefix[p]);
+              }
+              er.reportField('string', currentField, fInlineMsgs[i]!);
+              field.customKeys.length = parentKeysLength;
+              field.mutate(data);
+              return;
+            }
+          case _InlineKind.nullableString:
+            final raw = map[key];
+            if (raw == null && map.containsKey(key)) {
+              continue;
+            }
+            if (raw is! String) {
+              currentField.name = key;
+              currentField.value =
+                  (raw == null && !map.containsKey(key)) ? _missingValue : raw;
+              currentField.customKeys.length = parentKeysLength;
+              final prefix = fPrefixes[i];
+              for (int p = 0; p < prefix.length; p++) {
+                currentField.customKeys.add(prefix[p]);
+              }
+              er.reportField('string', currentField, fInlineMsgs[i]!);
+              field.customKeys.length = parentKeysLength;
+              field.mutate(data);
+              return;
+            }
+          case _InlineKind.closureCall:
+            currentField.name = key;
+            if (fNeedsSafe[i]) {
+              final raw = map[key];
+              currentField.value =
+                  (raw == null && !map.containsKey(key)) ? _missingValue : raw;
+            } else {
+              currentField.value = map[key] ?? _missingValue;
+            }
+            currentField.customKeys.length = parentKeysLength;
+            final prefix = fPrefixes[i];
+            for (int p = 0; p < prefix.length; p++) {
+              currentField.customKeys.add(prefix[p]);
+            }
+            currentField.canBeContinue = true;
+            fValidators[i]!(ctx, currentField);
+            if (!currentField.canBeContinue || er.hasError) {
+              field.customKeys.length = parentKeysLength;
+              field.mutate(data);
+              return;
+            }
+        }
+      }
+
+      field.customKeys.length = parentKeysLength;
+      field.mutate(data);
+    };
+  }
+
+  static List<_FlatField>? _flattenPureObject(
+    VineObjectSchema schema,
+    int depth,
+    List<String> parentErrorPrefix,
+  ) {
+    final result = <_FlatField>[];
+    for (final entry in schema.properties.entries) {
+      final key = entry.key;
+      final child = entry.value;
+
+      if (child is VineObjectSchema) {
+        if (!_isObjectRecursivelyPure(child)) return null;
+
+        final objectRule = child.rules.whereType<VineObjectRule>().firstOrNull;
+        final objectMsg = objectRule?.message ?? mappedErrors['object']!;
+        result.add(_FlatField.objectCheck(
+            key, depth, objectMsg, List.of(parentErrorPrefix)));
+
+        final innerPrefix = [...parentErrorPrefix, key];
+        final nested = _flattenPureObject(child, depth + 1, innerPrefix);
+        if (nested == null) return null;
+        result.addAll(nested);
+      } else if (child is VineArraySchema ||
+          child is VineUnionSchema ||
+          child is VineGroupSchema) {
+        return null;
+      } else {
+        final rules = _getRulesFromLeafSchema(child);
+        final needsSafeNull =
+            rules.any((r) => r is VineNullableRule || r is VineOptionalRule);
+        final compiledChild = _compileRules(rules);
+        final inlineKind = _getInlineKind(child);
+        final inlineMsg = _getInlineMsg(child);
+        result.add(_FlatField.leaf(key, depth, compiledChild, needsSafeNull,
+            List.of(parentErrorPrefix), inlineKind, inlineMsg));
+      }
+    }
+    return result;
+  }
+
+  // ---------------------------------------------------------------------------
   // Array index cache (shared with array_rule.dart pattern)
   // ---------------------------------------------------------------------------
   static const _maxCachedIndex = 256;
@@ -1635,4 +2134,38 @@ class _CompiledGroupRule {
   final List<CompiledValidatorFn> compiledChildren;
 
   const _CompiledGroupRule(this.condition, this.keys, this.compiledChildren);
+}
+
+class _FlatField {
+  final String key;
+  final int depth;
+  final CompiledValidatorFn? validator;
+  final bool needsSafeNull;
+  final bool isObjectCheck;
+  final String? objectMsg;
+  final List<String> errorPrefix;
+  final _InlineKind inlineKind;
+  final String? inlineMsg;
+
+  _FlatField.leaf(this.key, this.depth, this.validator, this.needsSafeNull,
+      this.errorPrefix, this.inlineKind, this.inlineMsg)
+      : isObjectCheck = false,
+        objectMsg = null;
+
+  _FlatField.objectCheck(this.key, this.depth, this.objectMsg, this.errorPrefix)
+      : validator = null,
+        needsSafeNull = true,
+        isObjectCheck = true,
+        inlineKind = _InlineKind.closureCall,
+        inlineMsg = null;
+}
+
+/// Inline-able type-check kinds for pure leaf schemas.
+/// When a leaf schema is just a type-check (optionally with optional/nullable),
+/// we can inline the check directly instead of calling a closure.
+enum _InlineKind {
+  stringCheck, // vine.string() — just `is! String`
+  optionalString, // vine.string().optional() — MissingValue → skip, else is! String
+  nullableString, // vine.string().nullable() — null → skip, else is! String
+  closureCall, // anything else — call the compiled closure
 }

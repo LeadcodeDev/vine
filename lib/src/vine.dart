@@ -131,7 +131,9 @@ final class Validator implements VineValidatorContract {
   late final CompiledValidatorFn _compiled;
 
   Validator(this._schema, this.errors) {
-    _compiled = SchemaCompiler.compile(_schema);
+    final r = reporter;
+    _compiled =
+        SchemaCompiler.compile(_schema, r is SimpleErrorReporter ? r : null);
   }
 
   VineSchema get schema => _schema;
